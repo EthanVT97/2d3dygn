@@ -35,6 +35,12 @@ services:
         fromDatabase:
           name: myanmar-betting-db
           property: password
+      - key: SANCTUM_STATEFUL_DOMAINS
+        value: myanmar-betting.onrender.com
+      - key: SESSION_DOMAIN
+        value: .onrender.com
+      - key: CORS_ALLOWED_ORIGINS
+        value: https://myanmar-betting.onrender.com
 
   # Frontend Service
   - type: web

@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia'
+import { api } from '../config/api'
 
 export const useFootballStore = defineStore('football', {
   state: () => ({
@@ -14,10 +15,18 @@ export const useFootballStore = defineStore('football', {
       this.error = null
       
       try {
-        // Replace with actual API endpoint
-        const response = await fetch('/api/matches')
-        const data = await response.json()
+        const response = await fetch(api.matches, {
+          credentials: 'include',
+          headers: {
+            'Accept': 'application/json'
+          }
+        })
         
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`)
+        }
+        
+        const data = await response.json()
         this.upcomingMatches = data.upcoming
         this.finishedMatches = data.finished
       } catch (error) {
@@ -30,10 +39,12 @@ export const useFootballStore = defineStore('football', {
 
     async placeBet(matchId, betData) {
       try {
-        const response = await fetch(`/api/matches/${matchId}/bet`, {
+        const response = await fetch(api.bet(matchId), {
           method: 'POST',
+          credentials: 'include',
           headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
           },
           body: JSON.stringify(betData)
         })
