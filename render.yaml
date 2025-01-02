@@ -1,0 +1,54 @@
+services:
+  # Backend API Service
+  - type: web
+    name: myanmar-betting-api
+    env: docker
+    dockerfilePath: ./myanmar-betting/backend/Dockerfile
+    buildCommand: cd myanmar-betting/backend && composer install && php artisan key:generate && php artisan migrate
+    startCommand: cd myanmar-betting/backend && php artisan serve --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: false
+      - key: APP_KEY
+        generateValue: true
+      - key: DB_CONNECTION
+        value: mysql
+      - key: DB_HOST
+        fromDatabase:
+          name: myanmar-betting-db
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: myanmar-betting-db
+          property: port
+      - key: DB_DATABASE
+        fromDatabase:
+          name: myanmar-betting-db
+          property: database
+      - key: DB_USERNAME
+        fromDatabase:
+          name: myanmar-betting-db
+          property: username
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: myanmar-betting-db
+          property: password
+
+  # Frontend Service
+  - type: web
+    name: myanmar-betting-frontend
+    env: docker
+    dockerfilePath: ./myanmar-betting/frontend/Dockerfile
+    buildCommand: cd myanmar-betting/frontend && npm install && npm run build
+    startCommand: cd myanmar-betting/frontend && npm run preview -- --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: VITE_API_URL
+        value: https://myanmar-betting-api.onrender.com
+
+databases:
+  - name: myanmar-betting-db
+    databaseName: myanmar_betting
+    user: myanmar_betting
+    ipAllowList: [] # only allow internal connections
