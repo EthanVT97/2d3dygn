@@ -18,6 +18,7 @@ A full-stack betting platform with Laravel backend and Vue.js frontend.
 ### Deployment Steps
 
 1. Push your code to GitHub:
+
 ```bash
 git init
 git add .
@@ -27,6 +28,7 @@ git push -u origin main
 ```
 
 2. In Render Dashboard:
+
    - Click "New +"
    - Select "Blueprint"
    - Connect your GitHub repository
@@ -36,14 +38,17 @@ git push -u origin main
      - The Vue.js frontend service
 
 3. Environment Variables:
+
    - Backend environment variables will be automatically set from `render.yaml`
    - Additional variables can be set in the Render dashboard
 
 4. Database:
+
    - The MySQL database will be automatically provisioned
    - Initial migrations will run during deployment
 
 5. Domains:
+
    - Backend API will be available at: `https://myanmar-betting-api.onrender.com`
    - Frontend will be available at: `https://myanmar-betting.onrender.com`
 
