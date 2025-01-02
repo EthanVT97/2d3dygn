@@ -1,17 +1,17 @@
 <template>
   <div class="min-h-screen bg-gray-50">
     <!-- Navigation -->
-    <nav class="bg-white shadow-lg border-b border-gray-200">
+    <nav class="bg-white shadow-lg border-b border-gray-200 sticky top-0 z-50">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between h-16">
           <!-- Left side -->
           <div class="flex">
             <div class="flex-shrink-0 flex items-center">
-              <router-link to="/" class="text-2xl font-bold text-primary hover:text-primary-dark transition-colors">
+              <router-link to="/" class="text-2xl font-bold text-gradient">
                 Myanmar Betting
               </router-link>
             </div>
-            <div class="hidden sm:ml-8 sm:flex sm:space-x-8" v-if="auth.isAuthenticated">
+            <div class="hidden sm:ml-8 sm:flex sm:space-x-4" v-if="auth.isAuthenticated">
               <router-link to="/2d" class="nav-link">2D</router-link>
               <router-link to="/3d" class="nav-link">3D</router-link>
               <router-link to="/thai-lottery" class="nav-link">Thai Lottery</router-link>
@@ -20,27 +20,27 @@
           </div>
 
           <!-- Right side -->
-          <div class="flex items-center">
+          <div class="flex items-center space-x-4">
             <template v-if="auth.isAuthenticated">
               <!-- Admin Dashboard Link -->
-              <router-link v-if="auth.isAdmin" to="/admin" class="nav-link mr-4">
+              <router-link v-if="auth.isAdmin" to="/admin" class="nav-link">
                 Admin Dashboard
               </router-link>
 
               <!-- Balance -->
-              <div class="mr-6 bg-gray-50 px-3 py-1 rounded-full">
+              <div class="bg-gray-50 px-4 py-1.5 rounded-full shadow-sm border border-gray-200">
                 <span class="text-sm text-gray-600">Balance:</span>
-                <span class="ml-1 text-sm font-semibold text-primary">
+                <span class="ml-1.5 text-sm font-semibold text-primary">
                   {{ formatAmount(auth.userBalance) }}
                 </span>
               </div>
 
               <!-- User Menu -->
-              <div class="ml-3 relative">
+              <div class="relative">
                 <button @click="userMenuOpen = !userMenuOpen"
-                  class="flex items-center text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary p-1">
+                  class="flex items-center text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary p-1.5 hover:bg-gray-50 transition-colors">
                   <span class="sr-only">Open user menu</span>
-                  <div class="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center">
+                  <div class="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center shadow-sm">
                     <span class="text-sm font-medium text-primary">
                       {{ auth.user?.name?.[0] || 'U' }}
                     </span>
@@ -49,10 +49,16 @@
 
                 <!-- Dropdown menu -->
                 <div v-if="userMenuOpen"
-                  class="origin-top-right absolute right-0 mt-2 w-48 rounded-lg shadow-lg bg-white ring-1 ring-black ring-opacity-5 py-1">
-                  <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Profile</a>
-                  <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Settings</a>
-                  <a href="#" @click="logout" class="block px-4 py-2 text-sm text-red-600 hover:bg-red-50">Sign out</a>
+                  class="origin-top-right absolute right-0 mt-2 w-48 rounded-lg shadow-lg bg-white ring-1 ring-black ring-opacity-5 py-1 border border-gray-100">
+                  <router-link to="/profile" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
+                    Profile
+                  </router-link>
+                  <router-link to="/settings" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
+                    Settings
+                  </router-link>
+                  <button @click="logout" class="w-full text-left block px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors">
+                    Sign out
+                  </button>
                 </div>
               </div>
             </template>
@@ -126,8 +132,8 @@ export default {
   font-size: 0.875rem;
   font-weight: 500;
   color: var(--gray-600);
-  border-radius: 0.375rem;
-  transition: all 0.2s;
+  border-radius: var(--radius);
+  transition: all 0.2s ease;
 }
 
 .nav-link:hover {
@@ -138,5 +144,6 @@ export default {
 .nav-link.router-link-active {
   color: var(--primary);
   background-color: var(--primary-light/10);
+  font-weight: 600;
 }
 </style>
