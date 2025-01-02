@@ -1,5 +1,16 @@
 import { defineStore } from 'pinia'
 import axios from 'axios'
+import { API_BASE_URL } from '../config/api'
+
+// Create axios instance with base URL and credentials
+const api = axios.create({
+  baseURL: API_BASE_URL,
+  withCredentials: true,
+  headers: {
+    'Accept': 'application/json',
+    'Content-Type': 'application/json'
+  }
+})
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({
@@ -16,27 +27,33 @@ export const useAuthStore = defineStore('auth', {
   actions: {
     async login(credentials) {
       try {
-        const response = await axios.post('/api/login', credentials)
+        // Get CSRF cookie first
+        await api.get('/sanctum/csrf-cookie')
+        const response = await api.post('/api/login', credentials)
         this.setAuth(response.data)
         return response
       } catch (error) {
+        console.error('Login error:', error)
         throw error
       }
     },
 
     async register(userData) {
       try {
-        const response = await axios.post('/api/register', userData)
+        // Get CSRF cookie first
+        await api.get('/sanctum/csrf-cookie')
+        const response = await api.post('/api/register', userData)
         this.setAuth(response.data)
         return response
       } catch (error) {
+        console.error('Register error:', error)
         throw error
       }
     },
 
     async logout() {
       try {
-        await axios.post('/api/logout')
+        await api.post('/api/logout')
       } catch (error) {
         console.error('Logout error:', error)
       } finally {
@@ -46,32 +63,38 @@ export const useAuthStore = defineStore('auth', {
 
     async fetchUser() {
       try {
-        const response = await axios.get('/api/user')
+        const response = await api.get('/api/user')
         this.user = response.data
         return response
       } catch (error) {
+        console.error('Fetch user error:', error)
         this.clearAuth()
         throw error
       }
     },
 
     setAuth(data) {
-      this.token = data.token
-      this.user = data.user
-      localStorage.setItem('token', data.token)
-      axios.defaults.headers.common['Authorization'] = `Bearer ${data.token}`
+      if (data.token) {
+        this.token = data.token
+        localStorage.setItem('token', data.token)
+        api.defaults.headers.common['Authorization'] = `Bearer ${data.token}`
+      }
+      if (data.user) {
+        this.user = data.user
+      }
     },
 
     clearAuth() {
-      this.token = null
       this.user = null
+      this.token = null
       localStorage.removeItem('token')
-      delete axios.defaults.headers.common['Authorization']
+      delete api.defaults.headers.common['Authorization']
     },
 
     async initAuth() {
-      if (this.token) {
-        axios.defaults.headers.common['Authorization'] = `Bearer ${this.token}`
+      const token = localStorage.getItem('token')
+      if (token) {
+        api.defaults.headers.common['Authorization'] = `Bearer ${token}`
         try {
           await this.fetchUser()
         } catch (error) {
@@ -81,3 +104,6 @@ export const useAuthStore = defineStore('auth', {
     }
   }
 })
+
+// Export the api instance for use in other stores
+export { api }

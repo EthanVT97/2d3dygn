@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { api } from '../config/api'
+import { api } from './auth'
 
 export const useFootballStore = defineStore('football', {
   state: () => ({
@@ -15,23 +15,18 @@ export const useFootballStore = defineStore('football', {
       this.error = null
       
       try {
-        const response = await fetch(api.matches, {
-          credentials: 'include',
-          headers: {
-            'Accept': 'application/json'
-          }
-        })
+        const response = await api.get('/api/matches')
         
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`)
+        if (!response.data) {
+          throw new Error('No data received from server')
         }
         
-        const data = await response.json()
-        this.upcomingMatches = data.upcoming
-        this.finishedMatches = data.finished
+        this.upcomingMatches = response.data.upcoming || []
+        this.finishedMatches = response.data.finished || []
       } catch (error) {
-        this.error = 'Failed to load matches'
+        this.error = error.response?.data?.message || 'Failed to load matches'
         console.error('Error fetching matches:', error)
+        throw error
       } finally {
         this.loading = false
       }
@@ -39,21 +34,13 @@ export const useFootballStore = defineStore('football', {
 
     async placeBet(matchId, betData) {
       try {
-        const response = await fetch(api.bet(matchId), {
-          method: 'POST',
-          credentials: 'include',
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
-          },
-          body: JSON.stringify(betData)
-        })
+        const response = await api.post(`/api/matches/${matchId}/bet`, betData)
         
         if (!response.ok) {
-          throw new Error('Failed to place bet')
+          throw new Error(response.data?.message || 'Failed to place bet')
         }
         
-        return await response.json()
+        return response.data
       } catch (error) {
         console.error('Error placing bet:', error)
         throw error
