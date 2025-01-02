@@ -17,7 +17,7 @@
         <form @submit.prevent="handleSubmit" class="space-y-6">
           <!-- Phone Input -->
           <div>
-            <label for="phone" class="form-label">ဖုန်းနံပါတ်</label>
+            <label for="phone" class="block text-sm font-medium text-gray-300 mb-1">ဖုန်းနံပါတ်</label>
             <div class="relative">
               <span 
                 class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400"
@@ -29,19 +29,19 @@
                 v-model="form.phone"
                 type="tel"
                 required
-                class="form-input pl-10"
-                :class="{ 'error': errors.phone }"
+                class="block w-full rounded-lg border border-gray-600 bg-gray-800 px-4 py-2 text-white focus:border-primary focus:ring-primary pl-10"
+                :class="{ 'border-red-500': errors.phone }"
                 placeholder="09xxxxxxxxx"
               />
             </div>
-            <p v-if="errors.phone" class="mt-1 text-sm text-error">
+            <p v-if="errors.phone" class="mt-1 text-sm text-red-500">
               {{ errors.phone }}
             </p>
           </div>
 
           <!-- Password Input -->
           <div>
-            <label for="password" class="form-label">စကားဝှက်</label>
+            <label for="password" class="block text-sm font-medium text-gray-300 mb-1">စကားဝှက်</label>
             <div class="relative">
               <span 
                 class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400"
@@ -53,8 +53,8 @@
                 v-model="form.password"
                 :type="showPassword ? 'text' : 'password'"
                 required
-                class="form-input pl-10"
-                :class="{ 'error': errors.password }"
+                class="block w-full rounded-lg border border-gray-600 bg-gray-800 px-4 py-2 text-white focus:border-primary focus:ring-primary pl-10"
+                :class="{ 'border-red-500': errors.password }"
                 placeholder="စကားဝှက်ထည့်ပါ"
               />
               <button
@@ -65,7 +65,7 @@
                 <i :class="showPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
               </button>
             </div>
-            <p v-if="errors.password" class="mt-1 text-sm text-error">
+            <p v-if="errors.password" class="mt-1 text-sm text-red-500">
               {{ errors.password }}
             </p>
           </div>
@@ -96,13 +96,13 @@
           <!-- Submit Button -->
           <button
             type="submit"
-            class="btn btn-primary w-full"
+            class="w-full py-2 px-4 rounded-lg font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 bg-primary text-white hover:bg-primary-dark focus:ring-primary"
             :class="{ 'opacity-75 cursor-not-allowed': isLoading }"
             :disabled="isLoading"
           >
-            <span v-if="isLoading" class="flex items-center justify-center">
+            <span v-if="isLoading">
               <i class="fas fa-spinner fa-spin mr-2"></i>
-              ဝင်နေသည်...
+              ခဏစောင့်ပါ...
             </span>
             <span v-else>အကောင့်ဝင်မည်</span>
           </button>
@@ -201,28 +201,6 @@ function togglePassword() {
 }
 </script>
 
-<style scoped>
-.form-input {
-  @apply block w-full rounded-lg border border-gray-600 bg-gray-800 px-4 py-2 text-white focus:border-primary focus:ring-primary;
-}
-
-.form-input.error {
-  @apply border-red-500;
-}
-
-.form-label {
-  @apply block text-sm font-medium text-gray-300 mb-1;
-}
-
-.btn {
-  @apply py-2 px-4 rounded-lg font-medium focus:outline-none focus:ring-2 focus:ring-offset-2;
-}
-
-.btn-primary {
-  @apply bg-primary text-white hover:bg-primary-dark focus:ring-primary;
-}
-
-.text-error {
-  @apply text-red-500;
-}
+<style>
+/* Empty style block - using Tailwind classes directly in template */
 </style>
