@@ -4,6 +4,9 @@ FROM node:18-alpine as build
 # Set working directory
 WORKDIR /app
 
+# Install path module globally
+RUN npm install -g path
+
 # Copy package files
 COPY package*.json ./
 
