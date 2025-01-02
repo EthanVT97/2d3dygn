@@ -1,76 +1,64 @@
-&lt;template>
-  &lt;div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<template>
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
     <!-- Revenue Chart -->
-    &lt;div class="bg-white rounded-lg shadow p-6">
-      &lt;h3 class="text-lg font-semibold mb-4">Revenue Overview&lt;/h3>
-      &lt;div class="flex space-x-4 mb-4">
-        &lt;button 
+    <div class="bg-white rounded-lg shadow p-6">
+      <h3 class="text-lg font-semibold mb-4">Revenue Overview</h3>
+      <div class="flex space-x-4 mb-4">
+        <button 
           v-for="period in periods" 
           :key="period.days"
           @click="selectedPeriod = period.days"
           :class="[
-            'px-3 py-1 rounded-md text-sm',
+            'px-3 py-1 rounded',
             selectedPeriod === period.days 
-              ? 'bg-primary text-white' 
-              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              ? 'bg-blue-500 text-white' 
+              : 'bg-gray-100 text-gray-600'
           ]"
         >
           {{ period.label }}
-        &lt;/button>
-      &lt;/div>
-      &lt;div class="h-80">
-        &lt;Line 
-          v-if="chartData"
-          :data="chartData"
-          :options="chartOptions"
-        />
-      &lt;/div>
-    &lt;/div>
+        </button>
+      </div>
+      <canvas ref="revenueChart"></canvas>
+    </div>
 
     <!-- User Activity Chart -->
-    &lt;div class="bg-white rounded-lg shadow p-6">
-      &lt;h3 class="text-lg font-semibold mb-4">User Activity&lt;/h3>
-      &lt;div class="flex space-x-4 mb-4">
-        &lt;button 
+    <div class="bg-white rounded-lg shadow p-6">
+      <h3 class="text-lg font-semibold mb-4">User Activity</h3>
+      <div class="flex space-x-4 mb-4">
+        <button 
           v-for="period in periods" 
           :key="period.days"
           @click="selectedActivityPeriod = period.days"
           :class="[
-            'px-3 py-1 rounded-md text-sm',
+            'px-3 py-1 rounded',
             selectedActivityPeriod === period.days 
-              ? 'bg-primary text-white' 
-              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              ? 'bg-blue-500 text-white' 
+              : 'bg-gray-100 text-gray-600'
           ]"
         >
           {{ period.label }}
-        &lt;/button>
-      &lt;/div>
-      &lt;div class="h-80">
-        &lt;Line 
-          v-if="activityChartData"
-          :data="activityChartData"
-          :options="activityChartOptions"
-        />
-      &lt;/div>
-    &lt;/div>
+        </button>
+      </div>
+      <canvas ref="activityChart"></canvas>
+    </div>
 
     <!-- Bet Distribution -->
-    &lt;div class="bg-white rounded-lg shadow p-6">
-      &lt;h3 class="text-lg font-semibold mb-4">Bet Distribution&lt;/h3>
-      &lt;div class="h-80">
-        &lt;Doughnut
+    <div class="bg-white rounded-lg shadow p-6">
+      <h3 class="text-lg font-semibold mb-4">Bet Distribution</h3>
+      <div class="h-80">
+        <Doughnut
           v-if="betDistributionData"
           :data="betDistributionData"
           :options="doughnutOptions"
         />
-      &lt;/div>
-    &lt;/div>
+      </div>
+    </div>
 
     <!-- Top Users -->
-    &lt;div class="bg-white rounded-lg shadow p-6">
-      &lt;h3 class="text-lg font-semibold mb-4">Top Users&lt;/h3>
-      &lt;div class="flex space-x-4 mb-4">
-        &lt;button 
+    <div class="bg-white rounded-lg shadow p-6">
+      <h3 class="text-lg font-semibold mb-4">Top Users</h3>
+      <div class="flex space-x-4 mb-4">
+        <button 
           v-for="type in userTypes" 
           :key="type.value"
           @click="selectedUserType = type.value"
@@ -82,32 +70,33 @@
           ]"
         >
           {{ type.label }}
-        &lt;/button>
-      &lt;/div>
-      &lt;div class="overflow-x-auto">
-        &lt;table class="min-w-full">
-          &lt;thead>
-            &lt;tr>
-              &lt;th class="px-4 py-2 text-left">User&lt;/th>
-              &lt;th class="px-4 py-2 text-right">Total&lt;/th>
-            &lt;/tr>
-          &lt;/thead>
-          &lt;tbody>
-            &lt;tr v-for="user in topUsers" :key="user.id">
-              &lt;td class="px-4 py-2">{{ user.name }}&lt;/td>
-              &lt;td class="px-4 py-2 text-right">
+        </button>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="min-w-full">
+          <thead>
+            <tr>
+              <th class="px-4 py-2 text-left">User</th>
+              <th class="px-4 py-2 text-right">Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="user in topUsers" :key="user.id">
+              <td class="px-4 py-2">{{ user.name }}</td>
+              <td class="px-4 py-2 text-right">
                 {{ formatAmount(getUserTotal(user)) }}
-              &lt;/td>
-            &lt;/tr>
-          &lt;/tbody>
-        &lt;/table>
-      &lt;/div>
-    &lt;/div>
-  &lt;/div>
-&lt;/template>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</template>
 
-&lt;script setup>
-import { ref, onMounted, computed } from 'vue'
+<script setup>
+import { ref, onMounted, watch, computed } from 'vue'
+import Chart from 'chart.js/auto'
 import { Line, Doughnut } from 'vue-chartjs'
 import {
   Chart as ChartJS,
@@ -133,10 +122,15 @@ ChartJS.register(
   ArcElement
 )
 
+const revenueChart = ref(null)
+const activityChart = ref(null)
+let revenueChartInstance = null
+let activityChartInstance = null
+
 const periods = [
-  { days: 7, label: '7 Days' },
-  { days: 30, label: '30 Days' },
-  { days: 90, label: '90 Days' }
+  { label: '7D', days: 7 },
+  { label: '30D', days: 30 },
+  { label: '90D', days: 90 }
 ]
 
 const userTypes = [
@@ -153,139 +147,19 @@ const activityData = ref(null)
 const betDistribution = ref(null)
 const topUsers = ref([])
 
-// Chart data
-const chartData = computed(() => {
-  if (!revenueData.value) return null
-
-  const labels = revenueData.value.map(d => new Date(d.date).toLocaleDateString())
-  return {
-    labels,
-    datasets: [
-      {
-        label: 'Deposits',
-        data: revenueData.value.map(d => d.deposits),
-        borderColor: '#10B981',
-        backgroundColor: '#10B981',
-        tension: 0.4
-      },
-      {
-        label: 'Withdrawals',
-        data: revenueData.value.map(d => d.withdrawals),
-        borderColor: '#EF4444',
-        backgroundColor: '#EF4444',
-        tension: 0.4
-      },
-      {
-        label: 'Net Revenue',
-        data: revenueData.value.map(d => d.deposits - d.withdrawals),
-        borderColor: '#3B82F6',
-        backgroundColor: '#3B82F6',
-        tension: 0.4
-      }
-    ]
-  }
-})
-
-const activityChartData = computed(() => {
-  if (!activityData.value) return null
-
-  const labels = activityData.value.new_users.map(d => new Date(d.date).toLocaleDateString())
-  return {
-    labels,
-    datasets: [
-      {
-        label: 'New Users',
-        data: activityData.value.new_users.map(d => d.new_users),
-        borderColor: '#10B981',
-        backgroundColor: '#10B981',
-        tension: 0.4
-      },
-      {
-        label: 'Active Users',
-        data: activityData.value.active_users.map(d => d.active_users),
-        borderColor: '#3B82F6',
-        backgroundColor: '#3B82F6',
-        tension: 0.4
-      }
-    ]
-  }
-})
-
-const betDistributionData = computed(() => {
-  if (!betDistribution.value) return null
-
-  const labels = Object.keys(betDistribution.value)
-  const data = Object.values(betDistribution.value)
-  
-  return {
-    labels,
-    datasets: [{
-      data,
-      backgroundColor: [
-        '#10B981',
-        '#3B82F6',
-        '#EF4444',
-        '#F59E0B',
-        '#8B5CF6'
-      ]
-    }]
-  }
-})
-
-// Chart options
-const chartOptions = {
-  responsive: true,
-  maintainAspectRatio: false,
-  plugins: {
-    legend: {
-      position: 'top'
-    }
-  },
-  scales: {
-    y: {
-      beginAtZero: true
-    }
-  }
-}
-
-const activityChartOptions = {
-  responsive: true,
-  maintainAspectRatio: false,
-  plugins: {
-    legend: {
-      position: 'top'
-    }
-  },
-  scales: {
-    y: {
-      beginAtZero: true
-    }
-  }
-}
-
-const doughnutOptions = {
-  responsive: true,
-  maintainAspectRatio: false,
-  plugins: {
-    legend: {
-      position: 'top'
-    }
-  }
-}
-
-// Fetch data
-const fetchRevenueData = async () => {
+// Fetch data from API
+const fetchRevenueData = async (days) => {
   try {
-    const { data } = await axios.get(`/api/admin/revenue?days=${selectedPeriod.value}`)
+    const { data } = await axios.get(`/api/admin/stats/revenue?days=${days}`)
     revenueData.value = data
   } catch (error) {
     console.error('Error fetching revenue data:', error)
   }
 }
 
-const fetchActivityData = async () => {
+const fetchActivityData = async (days) => {
   try {
-    const { data } = await axios.get(`/api/admin/user-activity?days=${selectedActivityPeriod.value}`)
+    const { data } = await axios.get(`/api/admin/stats/activity?days=${days}`)
     activityData.value = data
   } catch (error) {
     console.error('Error fetching activity data:', error)
@@ -310,6 +184,116 @@ const fetchTopUsers = async () => {
   }
 }
 
+// Chart data
+const chartData = computed(() => {
+  if (!revenueData.value) return null
+
+  const labels = revenueData.value.map(d => new Date(d.date).toLocaleDateString())
+  return {
+    labels,
+    datasets: [{
+      label: 'Revenue',
+      data: revenueData.value.map(d => d.amount),
+      borderColor: 'rgb(59, 130, 246)',
+      tension: 0.1
+    }]
+  }
+})
+
+const activityChartData = computed(() => {
+  if (!activityData.value) return null
+
+  const labels = activityData.value.map(d => new Date(d.date).toLocaleDateString())
+  return {
+    labels,
+    datasets: [{
+      label: 'Active Users',
+      data: activityData.value.map(d => d.count),
+      borderColor: 'rgb(16, 185, 129)',
+      tension: 0.1
+    }]
+  }
+})
+
+const betDistributionData = computed(() => {
+  if (!betDistribution.value) return null
+
+  const labels = Object.keys(betDistribution.value)
+  const data = Object.values(betDistribution.value)
+  
+  return {
+    labels,
+    datasets: [{
+      data,
+      backgroundColor: [
+        '#10B981',
+        '#3B82F6',
+        '#EF4444',
+        '#F59E0B',
+        '#8B5CF6'
+      ]
+    }]
+  }
+})
+
+// Create/Update charts
+const createRevenueChart = () => {
+  if (revenueChartInstance) {
+    revenueChartInstance.destroy()
+  }
+
+  const ctx = revenueChart.value.getContext('2d')
+  revenueChartInstance = new Chart(ctx, {
+    type: 'line',
+    data: chartData.value,
+    options: {
+      responsive: true,
+      maintainAspectRatio: false
+    }
+  })
+}
+
+const createActivityChart = () => {
+  if (activityChartInstance) {
+    activityChartInstance.destroy()
+  }
+
+  const ctx = activityChart.value.getContext('2d')
+  activityChartInstance = new Chart(ctx, {
+    type: 'line',
+    data: activityChartData.value,
+    options: {
+      responsive: true,
+      maintainAspectRatio: false
+    }
+  })
+}
+
+// Watch for changes
+watch(chartData, () => {
+  if (chartData.value) {
+    createRevenueChart()
+  }
+})
+
+watch(activityChartData, () => {
+  if (activityChartData.value) {
+    createActivityChart()
+  }
+})
+
+watch(selectedPeriod, (newDays) => {
+  fetchRevenueData(newDays)
+})
+
+watch(selectedActivityPeriod, (newDays) => {
+  fetchActivityData(newDays)
+})
+
+watch(selectedUserType, () => {
+  fetchTopUsers()
+})
+
 // Utility functions
 const formatAmount = (amount) => {
   return new Intl.NumberFormat('en-US', {
@@ -331,16 +315,17 @@ const getUserTotal = (user) => {
   }
 }
 
-// Watch for changes
-watch(selectedPeriod, fetchRevenueData)
-watch(selectedActivityPeriod, fetchActivityData)
-watch(selectedUserType, fetchTopUsers)
-
-// Initial fetch
+// Initialize
 onMounted(() => {
-  fetchRevenueData()
-  fetchActivityData()
+  fetchRevenueData(selectedPeriod.value)
+  fetchActivityData(selectedActivityPeriod.value)
   fetchBetDistribution()
   fetchTopUsers()
 })
-&lt;/script>
+</script>
+
+<style scoped>
+canvas {
+  min-height: 300px;
+}
+</style>
