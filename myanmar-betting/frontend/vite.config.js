@@ -22,5 +22,9 @@ export default defineConfig({
         }
       }
     }
-  }
+  },
+  // Base URL for production
+  base: '/',
+  // Copy _redirects file
+  publicDir: 'public'
 })
