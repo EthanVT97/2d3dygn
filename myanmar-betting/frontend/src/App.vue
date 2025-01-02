@@ -1,17 +1,17 @@
 <template>
   <div class="min-h-screen bg-gray-50">
     <!-- Navigation -->
-    <nav class="bg-white shadow-md">
+    <nav class="bg-white shadow-lg border-b border-gray-200">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between h-16">
           <!-- Left side -->
           <div class="flex">
             <div class="flex-shrink-0 flex items-center">
-              <router-link to="/" class="text-2xl font-bold text-blue-600 hover:text-blue-700">
+              <router-link to="/" class="text-2xl font-bold text-primary hover:text-primary-dark transition-colors">
                 Myanmar Betting
               </router-link>
             </div>
-            <div class="hidden sm:ml-6 sm:flex sm:space-x-8" v-if="auth.isAuthenticated">
+            <div class="hidden sm:ml-8 sm:flex sm:space-x-8" v-if="auth.isAuthenticated">
               <router-link to="/2d" class="nav-link">2D</router-link>
               <router-link to="/3d" class="nav-link">3D</router-link>
               <router-link to="/thai-lottery" class="nav-link">Thai Lottery</router-link>
@@ -28,9 +28,9 @@
               </router-link>
 
               <!-- Balance -->
-              <div class="mr-4">
+              <div class="mr-6 bg-gray-50 px-3 py-1 rounded-full">
                 <span class="text-sm text-gray-600">Balance:</span>
-                <span class="ml-1 text-sm font-semibold text-blue-600">
+                <span class="ml-1 text-sm font-semibold text-primary">
                   {{ formatAmount(auth.userBalance) }}
                 </span>
               </div>
@@ -38,10 +38,10 @@
               <!-- User Menu -->
               <div class="ml-3 relative">
                 <button @click="userMenuOpen = !userMenuOpen"
-                  class="bg-white rounded-full flex text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                  class="flex items-center text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary p-1">
                   <span class="sr-only">Open user menu</span>
-                  <div class="h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center">
-                    <span class="text-sm font-medium text-gray-700">
+                  <div class="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center">
+                    <span class="text-sm font-medium text-primary">
                       {{ auth.user?.name?.[0] || 'U' }}
                     </span>
                   </div>
@@ -49,15 +49,10 @@
 
                 <!-- Dropdown menu -->
                 <div v-if="userMenuOpen"
-                  class="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 focus:outline-none">
-                  <div class="px-4 py-2 text-sm text-gray-700">
-                    {{ auth.user?.name }}
-                  </div>
-                  <div class="border-t border-gray-100"></div>
-                  <a href="#" @click.prevent="logout"
-                    class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                    Sign out
-                  </a>
+                  class="origin-top-right absolute right-0 mt-2 w-48 rounded-lg shadow-lg bg-white ring-1 ring-black ring-opacity-5 py-1">
+                  <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Profile</a>
+                  <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Settings</a>
+                  <a href="#" @click="logout" class="block px-4 py-2 text-sm text-red-600 hover:bg-red-50">Sign out</a>
                 </div>
               </div>
             </template>
@@ -127,21 +122,21 @@ export default {
 .nav-link {
   display: inline-flex;
   align-items: center;
-  padding: 0.25rem 0.25rem 0 0.25rem;
+  padding: 0.5rem 0.75rem;
   font-size: 0.875rem;
   font-weight: 500;
-  color: #4b5563;
-  border-bottom: 2px solid transparent;
-  transition: color 0.2s, border-color 0.2s;
+  color: var(--gray-600);
+  border-radius: 0.375rem;
+  transition: all 0.2s;
 }
 
 .nav-link:hover {
-  color: #2563eb;
-  border-bottom-color: #2563eb;
+  color: var(--primary);
+  background-color: var(--gray-50);
 }
 
 .nav-link.router-link-active {
-  color: #2563eb;
-  border-bottom-color: #2563eb;
+  color: var(--primary);
+  background-color: var(--primary-light/10);
 }
 </style>
