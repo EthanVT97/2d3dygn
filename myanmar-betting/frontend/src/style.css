@@ -52,13 +52,30 @@
   --radius-xl: 1rem;
   --radius-2xl: 1.5rem;
   --radius-full: 9999px;
+
+  /* Dark theme colors */
+  --color-background: #121212;
+  --color-surface: #1e1e1e;
+  --color-primary: #00b894;
+  --color-secondary: #00cec9;
+  --color-text: #ffffff;
+  --color-text-secondary: #b2bec3;
+  --color-success: #00b894;
+  --color-warning: #fdcb6e;
+  --color-error: #ff7675;
+  --color-border: #2d3436;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.5);
 }
 
 /* Base Styles */
 body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-  color: var(--gray-900);
-  background-color: var(--gray-50);
+  color: var(--color-text);
+  background-color: var(--color-background);
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -92,7 +109,7 @@ h6 { font-size: 1rem; }
   display: block;
   font-size: 0.875rem;
   font-weight: 500;
-  color: var(--gray-700);
+  color: var(--color-text-secondary);
   margin-bottom: 0.375rem;
 }
 
@@ -103,35 +120,35 @@ h6 { font-size: 1rem; }
   padding: 0.625rem 0.875rem;
   font-size: 0.875rem;
   line-height: 1.5;
-  color: var(--gray-900);
-  background-color: white;
+  color: var(--color-text);
+  background-color: var(--color-surface);
   background-clip: padding-box;
-  border: 1px solid var(--gray-300);
+  border: 1px solid var(--color-border);
   border-radius: var(--radius);
   box-shadow: var(--shadow-sm);
   transition: all 0.15s ease-in-out;
 }
 
 .form-input:hover:not(:disabled) {
-  border-color: var(--gray-400);
+  border-color: var(--color-border);
 }
 
 .form-input:focus {
   outline: none;
-  border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(var(--primary-rgb), 0.12);
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(var(--color-primary), 0.12);
 }
 
 .form-input:disabled {
-  background-color: var(--gray-50);
-  color: var(--gray-500);
-  border-color: var(--gray-200);
+  background-color: var(--color-background);
+  color: var(--color-text-secondary);
+  border-color: var(--color-border);
   cursor: not-allowed;
   opacity: 0.7;
 }
 
 .form-input::placeholder {
-  color: var(--gray-400);
+  color: var(--color-text-secondary);
 }
 
 /* Button Styles */
@@ -162,18 +179,18 @@ h6 { font-size: 1rem; }
 
 .btn-primary {
   color: white;
-  background-color: var(--primary);
-  border-color: var(--primary);
+  background-color: var(--color-primary);
+  border-color: var(--color-primary);
 }
 
 .btn-primary:hover:not(:disabled) {
-  background-color: var(--primary-dark);
-  border-color: var(--primary-dark);
+  background-color: #00a884;
+  border-color: #00a884;
   transform: translateY(-1px);
 }
 
 .btn-primary:focus {
-  box-shadow: 0 0 0 3px rgba(var(--primary-rgb), 0.15);
+  box-shadow: 0 0 0 3px rgba(var(--color-primary), 0.15);
 }
 
 .btn-primary:active {
@@ -191,32 +208,32 @@ h6 { font-size: 1rem; }
 }
 
 .alert-success {
-  color: var(--success);
-  background-color: var(--success-light);
-  border-color: var(--success);
+  color: var(--color-success);
+  background-color: rgba(0, 184, 148, 0.1);
+  border-color: var(--color-success);
 }
 
 .alert-danger {
-  color: var(--danger);
-  background-color: var(--danger-light);
-  border-color: var(--danger);
+  color: var(--color-error);
+  background-color: rgba(255, 118, 117, 0.1);
+  border-color: var(--color-error);
 }
 
 .alert-warning {
-  color: var(--warning);
-  background-color: var(--warning-light);
-  border-color: var(--warning);
+  color: var(--color-warning);
+  background-color: rgba(253, 203, 110, 0.1);
+  border-color: var(--color-warning);
 }
 
 .alert-info {
-  color: var(--info);
-  background-color: var(--info-light);
-  border-color: var(--info);
+  color: var(--color-text);
+  background-color: rgba(255, 255, 255, 0.1);
+  border-color: var(--color-text);
 }
 
 /* Card Styles */
 .card {
-  background-color: white;
+  background-color: var(--color-surface);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow);
   transition: all 0.2s ease-in-out;
@@ -229,7 +246,7 @@ h6 { font-size: 1rem; }
 
 /* Navigation Styles */
 .nav-link {
-  color: var(--gray-600);
+  color: var(--color-text-secondary);
   text-decoration: none;
   padding: 0.5rem 0.75rem;
   border-radius: var(--radius);
@@ -237,19 +254,19 @@ h6 { font-size: 1rem; }
 }
 
 .nav-link:hover {
-  color: var(--primary);
-  background-color: var(--gray-50);
+  color: var(--color-primary);
+  background-color: var(--color-background);
 }
 
 .nav-link.active {
-  color: var(--primary);
-  background-color: var(--primary-light);
+  color: var(--color-primary);
+  background-color: var(--color-primary-light);
   font-weight: 500;
 }
 
 /* Table Styles */
 .table-container {
-  background-color: white;
+  background-color: var(--color-surface);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow);
   overflow: hidden;
@@ -261,16 +278,18 @@ h6 { font-size: 1rem; }
 }
 
 .table th {
-  background-color: var(--gray-50);
+  background-color: var(--color-background);
   font-weight: 500;
   text-align: left;
   padding: 0.75rem 1rem;
-  border-bottom: 1px solid var(--gray-200);
+  border-bottom: 1px solid var(--color-border);
+  color: var(--color-primary);
 }
 
 .table td {
   padding: 0.75rem 1rem;
-  border-bottom: 1px solid var(--gray-200);
+  border-bottom: 1px solid var(--color-border);
+  color: var(--color-text);
 }
 
 .table tr:last-child td {
@@ -278,7 +297,7 @@ h6 { font-size: 1rem; }
 }
 
 .table tbody tr:hover {
-  background-color: var(--gray-50);
+  background-color: var(--color-background);
 }
 
 /* Badge Styles */
@@ -294,22 +313,22 @@ h6 { font-size: 1rem; }
 
 .badge-primary {
   color: white;
-  background-color: var(--primary);
+  background-color: var(--color-primary);
 }
 
 .badge-success {
   color: white;
-  background-color: var(--success);
+  background-color: var(--color-success);
 }
 
 .badge-warning {
-  color: var(--gray-900);
-  background-color: var(--warning);
+  color: var(--color-text);
+  background-color: var(--color-warning);
 }
 
 .badge-danger {
   color: white;
-  background-color: var(--danger);
+  background-color: var(--color-error);
 }
 
 /* Utility Classes */
@@ -330,13 +349,13 @@ h6 { font-size: 1rem; }
 /* Links */
 a {
   font-weight: 500;
-  color: var(--primary);
+  color: var(--color-primary);
   text-decoration: none;
   transition: all 0.2s ease;
 }
 
 a:hover {
-  color: var(--primary-dark);
+  color: #00a884;
 }
 
 /* Buttons */
@@ -369,7 +388,7 @@ button, .btn {
 
 .btn:focus {
   outline: none;
-  box-shadow: 0 0 0 3px rgba(var(--primary-rgb), 0.1);
+  box-shadow: 0 0 0 3px rgba(var(--color-primary), 0.1);
 }
 
 .btn:disabled {
@@ -378,34 +397,34 @@ button, .btn {
 }
 
 .btn-primary {
-  background-color: var(--primary);
+  background-color: var(--color-primary);
   color: white;
 }
 
 .btn-primary:hover:not(:disabled) {
-  background-color: var(--primary-dark);
+  background-color: #00a884;
 }
 
 .btn-primary:focus {
-  box-shadow: 0 0 0 3px rgba(var(--primary-rgb), 0.2);
+  box-shadow: 0 0 0 3px rgba(var(--color-primary), 0.2);
 }
 
 .btn-secondary {
-  background-color: white;
-  border-color: var(--gray-300);
-  color: var(--gray-700);
+  background-color: var(--color-surface);
+  border-color: var(--color-border);
+  color: var(--color-text-secondary);
   box-shadow: var(--shadow-sm);
 }
 
 .btn-secondary:hover {
-  border-color: var(--primary);
-  color: var(--primary);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
   transform: translateY(-1px);
   box-shadow: var(--shadow-md);
 }
 
 .btn-success {
-  background-color: var(--success);
+  background-color: var(--color-success);
   color: white;
 }
 
@@ -415,7 +434,7 @@ button, .btn {
 }
 
 .btn-danger {
-  background-color: var(--danger);
+  background-color: var(--color-error);
   color: white;
 }
 
@@ -426,7 +445,7 @@ button, .btn {
 
 /* Cards */
 .card {
-  background-color: white;
+  background-color: var(--color-surface);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow);
   padding: 1.5rem;
@@ -446,7 +465,7 @@ button, .btn {
   display: block;
   font-size: 0.875rem;
   font-weight: 500;
-  color: var(--gray-700);
+  color: var(--color-text-secondary);
   margin-bottom: 0.25rem;
 }
 
@@ -455,29 +474,29 @@ button, .btn {
   display: block;
   width: 100%;
   padding: 0.5rem 0.75rem;
-  border: 1px solid var(--gray-300);
+  border: 1px solid var(--color-border);
   border-radius: 0.375rem;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
   font-size: 0.875rem;
-  color: var(--gray-900);
-  background-color: white;
+  color: var(--color-text);
+  background-color: var(--color-surface);
   transition: all 0.2s ease;
 }
 
 .form-input::placeholder {
-  color: var(--gray-400);
+  color: var(--color-text-secondary);
 }
 
 .form-input:focus {
   outline: none;
-  border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(var(--primary-rgb), 0.1);
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(var(--color-primary), 0.1);
 }
 
 .form-input:disabled {
-  background-color: var(--gray-50);
-  color: var(--gray-500);
-  border-color: var(--gray-200);
+  background-color: var(--color-background);
+  color: var(--color-text-secondary);
+  border-color: var(--color-border);
   box-shadow: none;
 }
 
@@ -489,21 +508,21 @@ button, .btn {
 }
 
 .alert-danger {
-  background-color: var(--danger-light);
-  color: var(--danger);
-  border: 1px solid var(--danger);
+  background-color: rgba(255, 118, 117, 0.1);
+  color: var(--color-error);
+  border: 1px solid var(--color-error);
 }
 
 .alert-success {
-  background-color: var(--success-light);
-  color: var(--success);
-  border: 1px solid var(--success);
+  background-color: rgba(0, 184, 148, 0.1);
+  color: var(--color-success);
+  border: 1px solid var(--color-success);
 }
 
 .alert-warning {
-  background-color: var(--warning-light);
-  color: var(--warning);
-  border: 1px solid var(--warning);
+  background-color: rgba(253, 203, 110, 0.1);
+  color: var(--color-warning);
+  border: 1px solid var(--color-warning);
 }
 
 /* Tables */
@@ -517,23 +536,23 @@ button, .btn {
   width: 100%;
   border-collapse: separate;
   border-spacing: 0;
-  background-color: white;
+  background-color: var(--color-surface);
 }
 
 .table th {
-  background-color: var(--gray-50);
+  background-color: var(--color-background);
   font-weight: 600;
   text-align: left;
   padding: 0.875rem 1.25rem;
-  border-bottom: 1px solid var(--gray-200);
-  color: var(--gray-600);
+  border-bottom: 1px solid var(--color-border);
+  color: var(--color-primary);
   font-size: 0.875rem;
 }
 
 .table td {
   padding: 1rem 1.25rem;
-  border-bottom: 1px solid var(--gray-200);
-  color: var(--gray-700);
+  border-bottom: 1px solid var(--color-border);
+  color: var(--color-text);
   font-size: 0.875rem;
 }
 
@@ -546,7 +565,7 @@ button, .btn {
 }
 
 .table tbody tr:hover {
-  background-color: var(--gray-50);
+  background-color: var(--color-background);
 }
 
 /* Badges */
@@ -561,23 +580,23 @@ button, .btn {
 }
 
 .badge-primary {
-  background-color: var(--primary-light/15);
-  color: var(--primary);
+  background-color: var(--color-primary-light/15);
+  color: var(--color-primary);
 }
 
 .badge-success {
-  background-color: var(--success-light);
-  color: var(--success);
+  background-color: var(--color-success-light);
+  color: var(--color-success);
 }
 
 .badge-warning {
-  background-color: var(--warning-light);
-  color: var(--warning);
+  background-color: var(--color-warning-light);
+  color: var(--color-warning);
 }
 
 .badge-danger {
-  background-color: var(--danger-light);
-  color: var(--danger);
+  background-color: var(--color-error-light);
+  color: var(--color-error);
 }
 
 /* Utilities */
@@ -602,4 +621,55 @@ button, .btn {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+  .container {
+    padding: 1rem;
+  }
+  
+  .card {
+    margin: 0.5rem 0;
+  }
+  
+  .btn {
+    width: 100%;
+    margin: 0.5rem 0;
+  }
+}
+
+/* Loading states */
+.loading {
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+/* Transitions */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-background);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-primary);
 }

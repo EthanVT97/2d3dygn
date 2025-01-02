@@ -1,207 +1,277 @@
 <template>
-  <div class="min-h-[calc(100vh-4rem)] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-gray-50 to-gray-100">
-    <div class="card max-w-md w-full space-y-8 p-8">
-      <div class="text-center">
-        <h2 class="text-3xl font-extrabold text-gray-900">
-          အကောင့်အသစ်ဖွင့်ရန်
-        </h2>
-        <p class="mt-2 text-sm text-gray-600">
-          သို့မဟုတ်
-          <router-link to="/login" class="font-medium text-primary hover:text-primary-dark">
-            အကောင့်ဝင်ရန်
-          </router-link>
-        </p>
-      </div>
+  <div class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-gray-900 to-gray-700 text-white">
+    <div class="max-w-md w-full">
+      <div class="card p-8 bg-gray-800 rounded-lg shadow-lg">
+        <!-- Header -->
+        <div class="text-center mb-8">
+          <h2 class="text-3xl font-bold">Create Account</h2>
+          <p class="mt-2 text-text-secondary">
+            Join Myanmar Betting today
+          </p>
+        </div>
 
-      <form class="mt-8 space-y-6" @submit.prevent="handleSubmit">
-        <div class="space-y-4">
+        <!-- Form -->
+        <form @submit.prevent="handleSubmit" class="space-y-6">
           <!-- Name Input -->
           <div>
-            <label for="name" class="form-label">အမည်</label>
+            <label for="name" class="form-label">Full Name</label>
             <div class="relative">
-              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
-                  <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
-                </svg>
-              </div>
-              <input 
-                id="name" 
-                v-model="name" 
-                type="text" 
-                required 
-                class="form-input pl-10" 
-                placeholder="အမည်ထည့်ပါ"
-                :class="{ 'border-danger': errors.name }"
+              <span 
+                class="absolute inset-y-0 left-0 pl-3 flex items-center text-text-secondary"
+              >
+                <i class="fas fa-user"></i>
+              </span>
+              <input
+                id="name"
+                v-model="form.name"
+                type="text"
+                required
+                class="form-input pl-10"
+                :class="{ 'error': errors.name }"
+                placeholder="Enter your full name"
               />
             </div>
-            <p v-if="errors.name" class="mt-1 text-sm text-danger">{{ errors.name }}</p>
+            <p v-if="errors.name" class="mt-1 text-sm text-error">
+              {{ errors.name }}
+            </p>
           </div>
 
           <!-- Phone Input -->
           <div>
-            <label for="phone" class="form-label">ဖုန်းနံပါတ်</label>
+            <label for="phone" class="form-label">Phone Number</label>
             <div class="relative">
-              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
-                  <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
-                </svg>
-              </div>
-              <input 
-                id="phone" 
-                v-model="phone" 
-                type="tel" 
-                required 
-                class="form-input pl-10" 
-                placeholder="09xxxxxxxxx"
-                :class="{ 'border-danger': errors.phone }"
+              <span 
+                class="absolute inset-y-0 left-0 pl-3 flex items-center text-text-secondary"
+              >
+                <i class="fas fa-phone"></i>
+              </span>
+              <input
+                id="phone"
+                v-model="form.phone"
+                type="tel"
+                required
+                class="form-input pl-10"
+                :class="{ 'error': errors.phone }"
+                placeholder="Enter your phone number"
               />
             </div>
-            <p v-if="errors.phone" class="mt-1 text-sm text-danger">{{ errors.phone }}</p>
+            <p v-if="errors.phone" class="mt-1 text-sm text-error">
+              {{ errors.phone }}
+            </p>
           </div>
 
           <!-- Password Input -->
           <div>
-            <label for="password" class="form-label">စကားဝှက်</label>
+            <label for="password" class="form-label">Password</label>
             <div class="relative">
-              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
-                  <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd" />
-                </svg>
-              </div>
-              <input 
-                id="password" 
-                v-model="password" 
-                :type="showPassword ? 'text' : 'password'" 
-                required 
-                class="form-input pl-10 pr-10" 
-                placeholder="စကားဝှက်ထည့်ပါ"
-                :class="{ 'border-danger': errors.password }"
+              <span 
+                class="absolute inset-y-0 left-0 pl-3 flex items-center text-text-secondary"
+              >
+                <i class="fas fa-lock"></i>
+              </span>
+              <input
+                id="password"
+                v-model="form.password"
+                :type="showPassword ? 'text' : 'password'"
+                required
+                class="form-input pl-10"
+                :class="{ 'error': errors.password }"
+                placeholder="Create a password"
               />
-              <button 
+              <button
                 type="button"
-                class="absolute inset-y-0 right-0 pr-3 flex items-center"
+                class="absolute inset-y-0 right-0 pr-3 flex items-center text-text-secondary hover:text-primary"
                 @click="togglePassword"
               >
-                <svg 
-                  v-if="showPassword"
-                  xmlns="http://www.w3.org/2000/svg" 
-                  class="h-5 w-5 text-gray-400 hover:text-gray-600" 
-                  viewBox="0 0 20 20" 
-                  fill="currentColor"
-                >
-                  <path fill-rule="evenodd" d="M3.707 2.293a1 1 0 00-1.414 1.414l14 14a1 1 0 001.414-1.414l-1.473-1.473A10.014 10.014 0 0019.542 10C18.268 5.943 14.478 3 10 3a9.958 9.958 0 00-4.512 1.074l-1.78-1.781zm4.261 4.26l1.514 1.515a2.003 2.003 0 012.45 2.45l1.514 1.514a4 4 0 00-5.478-5.478z" clip-rule="evenodd" />
-                  <path d="M12.454 16.697L9.75 13.992a4 4 0 01-3.742-3.741L2.335 6.578A9.98 9.98 0 00.458 10c1.274 4.057 5.065 7 9.542 7 .847 0 1.669-.105 2.454-.303z" />
-                </svg>
-                <svg 
-                  v-else
-                  xmlns="http://www.w3.org/2000/svg" 
-                  class="h-5 w-5 text-gray-400 hover:text-gray-600" 
-                  viewBox="0 0 20 20" 
-                  fill="currentColor"
-                >
-                  <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
-                  <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd" />
-                </svg>
+                <i :class="showPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
               </button>
             </div>
-            <p v-if="errors.password" class="mt-1 text-sm text-danger">{{ errors.password }}</p>
+            <p v-if="errors.password" class="mt-1 text-sm text-error">
+              {{ errors.password }}
+            </p>
           </div>
 
           <!-- Confirm Password Input -->
           <div>
-            <label for="confirmPassword" class="form-label">စကားဝှက်အတည်ပြုပါ</label>
+            <label for="confirmPassword" class="form-label">Confirm Password</label>
             <div class="relative">
-              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
-                  <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd" />
-                </svg>
-              </div>
-              <input 
-                id="confirmPassword" 
-                v-model="confirmPassword" 
-                :type="showConfirmPassword ? 'text' : 'password'" 
-                required 
-                class="form-input pl-10 pr-10" 
-                placeholder="စကားဝှက်ပြန်ထည့်ပါ"
-                :class="{ 'border-danger': errors.confirmPassword }"
+              <span 
+                class="absolute inset-y-0 left-0 pl-3 flex items-center text-text-secondary"
+              >
+                <i class="fas fa-lock"></i>
+              </span>
+              <input
+                id="confirmPassword"
+                v-model="form.confirmPassword"
+                :type="showConfirmPassword ? 'text' : 'password'"
+                required
+                class="form-input pl-10"
+                :class="{ 'error': errors.confirmPassword }"
+                placeholder="Confirm your password"
               />
-              <button 
+              <button
                 type="button"
-                class="absolute inset-y-0 right-0 pr-3 flex items-center"
+                class="absolute inset-y-0 right-0 pr-3 flex items-center text-text-secondary hover:text-primary"
                 @click="toggleConfirmPassword"
               >
-                <svg 
-                  v-if="showConfirmPassword"
-                  xmlns="http://www.w3.org/2000/svg" 
-                  class="h-5 w-5 text-gray-400 hover:text-gray-600" 
-                  viewBox="0 0 20 20" 
-                  fill="currentColor"
-                >
-                  <path fill-rule="evenodd" d="M3.707 2.293a1 1 0 00-1.414 1.414l14 14a1 1 0 001.414-1.414l-1.473-1.473A10.014 10.014 0 0019.542 10C18.268 5.943 14.478 3 10 3a9.958 9.958 0 00-4.512 1.074l-1.78-1.781zm4.261 4.26l1.514 1.515a2.003 2.003 0 012.45 2.45l1.514 1.514a4 4 0 00-5.478-5.478z" clip-rule="evenodd" />
-                  <path d="M12.454 16.697L9.75 13.992a4 4 0 01-3.742-3.741L2.335 6.578A9.98 9.98 0 00.458 10c1.274 4.057 5.065 7 9.542 7 .847 0 1.669-.105 2.454-.303z" />
-                </svg>
-                <svg 
-                  v-else
-                  xmlns="http://www.w3.org/2000/svg" 
-                  class="h-5 w-5 text-gray-400 hover:text-gray-600" 
-                  viewBox="0 0 20 20" 
-                  fill="currentColor"
-                >
-                  <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
-                  <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd" />
-                </svg>
+                <i :class="showConfirmPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
               </button>
             </div>
-            <p v-if="errors.confirmPassword" class="mt-1 text-sm text-danger">{{ errors.confirmPassword }}</p>
+            <p v-if="errors.confirmPassword" class="mt-1 text-sm text-error">
+              {{ errors.confirmPassword }}
+            </p>
           </div>
-        </div>
 
-        <div>
-          <button 
-            type="submit" 
+          <!-- Terms and Conditions -->
+          <div class="flex items-center">
+            <input
+              id="terms"
+              v-model="form.acceptTerms"
+              type="checkbox"
+              required
+              class="h-4 w-4 text-primary border-gray-300 rounded focus:ring-primary"
+            />
+            <label for="terms" class="ml-2 block text-sm text-text-secondary">
+              I agree to the 
+              <router-link 
+                to="/terms"
+                class="font-medium text-primary hover:text-primary-dark"
+              >
+                Terms and Conditions
+              </router-link>
+            </label>
+          </div>
+
+          <!-- Submit Button -->
+          <button
+            type="submit"
             class="btn btn-primary w-full"
-            :disabled="loading"
+            :class="{ 'opacity-75 cursor-not-allowed': isLoading }"
+            :disabled="isLoading"
           >
-            <svg 
-              v-if="loading"
-              class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" 
-              xmlns="http://www.w3.org/2000/svg" 
-              fill="none" 
-              viewBox="0 0 24 24"
-            >
-              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
-            {{ loading ? 'အကောင့်ဖွင့်နေသည်...' : 'အကောင့်ဖွင့်မည်' }}
+            <span v-if="isLoading" class="flex items-center justify-center">
+              <i class="fas fa-spinner fa-spin mr-2"></i>
+              Creating account...
+            </span>
+            <span v-else>Create Account</span>
           </button>
-        </div>
-      </form>
 
-      <!-- Alert Messages -->
-      <div v-if="error" class="alert alert-danger" role="alert">
-        {{ error }}
+          <!-- Login Link -->
+          <p class="mt-4 text-center text-sm text-text-secondary">
+            Already have an account?
+            <router-link 
+              to="/login"
+              class="font-medium text-primary hover:text-primary-dark"
+            >
+              Sign in
+            </router-link>
+          </p>
+        </form>
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 
 const router = useRouter()
 const auth = useAuthStore()
 
-const name = ref('')
-const phone = ref('')
-const password = ref('')
-const confirmPassword = ref('')
+const form = reactive({
+  name: '',
+  phone: '',
+  password: '',
+  confirmPassword: '',
+  acceptTerms: false
+})
+
+const errors = reactive({
+  name: '',
+  phone: '',
+  password: '',
+  confirmPassword: ''
+})
+
+const isLoading = ref(false)
 const showPassword = ref(false)
 const showConfirmPassword = ref(false)
-const loading = ref(false)
-const error = ref('')
-const errors = ref({})
+
+function validateForm() {
+  let isValid = true
+  
+  // Reset errors
+  Object.keys(errors).forEach(key => errors[key] = '')
+  
+  // Validate name
+  if (!form.name) {
+    errors.name = 'Name is required'
+    isValid = false
+  } else if (form.name.length < 2) {
+    errors.name = 'Name must be at least 2 characters'
+    isValid = false
+  }
+  
+  // Validate phone
+  if (!form.phone) {
+    errors.phone = 'Phone number is required'
+    isValid = false
+  } else if (!/^[0-9]{9,11}$/.test(form.phone)) {
+    errors.phone = 'Please enter a valid phone number'
+    isValid = false
+  }
+  
+  // Validate password
+  if (!form.password) {
+    errors.password = 'Password is required'
+    isValid = false
+  } else if (form.password.length < 6) {
+    errors.password = 'Password must be at least 6 characters'
+    isValid = false
+  }
+  
+  // Validate confirm password
+  if (!form.confirmPassword) {
+    errors.confirmPassword = 'Please confirm your password'
+    isValid = false
+  } else if (form.confirmPassword !== form.password) {
+    errors.confirmPassword = 'Passwords do not match'
+    isValid = false
+  }
+  
+  return isValid
+}
+
+async function handleSubmit() {
+  if (!validateForm()) return
+  
+  isLoading.value = true
+  
+  try {
+    await auth.register({
+      name: form.name,
+      phone: form.phone,
+      password: form.password
+    })
+    router.push('/login')
+  } catch (error) {
+    if (error.response?.data?.message) {
+      // Handle specific error messages from the server
+      const message = error.response.data.message
+      if (message.includes('phone')) {
+        errors.phone = message
+      } else {
+        errors.password = message
+      }
+    } else {
+      errors.password = 'An error occurred. Please try again.'
+    }
+  } finally {
+    isLoading.value = false
+  }
+}
 
 function togglePassword() {
   showPassword.value = !showPassword.value
@@ -210,67 +280,19 @@ function togglePassword() {
 function toggleConfirmPassword() {
   showConfirmPassword.value = !showConfirmPassword.value
 }
-
-function validateForm() {
-  errors.value = {}
-  let isValid = true
-
-  // Name validation
-  if (!name.value) {
-    errors.value.name = 'အမည်ထည့်ပါ'
-    isValid = false
-  } else if (name.value.length < 2) {
-    errors.value.name = 'အမည်သည်အနည်းဆုံး ၂ လုံးရှိရမည်'
-    isValid = false
-  }
-
-  // Phone validation
-  if (!phone.value) {
-    errors.value.phone = 'ဖုန်းနံပါတ်ထည့်ပါ'
-    isValid = false
-  } else if (!/^09\d{9}$/.test(phone.value)) {
-    errors.value.phone = 'မှန်ကန်သောဖုန်းနံပါတ်ထည့်ပါ'
-    isValid = false
-  }
-
-  // Password validation
-  if (!password.value) {
-    errors.value.password = 'စကားဝှက်ထည့်ပါ'
-    isValid = false
-  } else if (password.value.length < 6) {
-    errors.value.password = 'စကားဝှက်သည်အနည်းဆုံး ၆ လုံးရှိရမည်'
-    isValid = false
-  }
-
-  // Confirm password validation
-  if (!confirmPassword.value) {
-    errors.value.confirmPassword = 'စကားဝှက်ပြန်ထည့်ပါ'
-    isValid = false
-  } else if (confirmPassword.value !== password.value) {
-    errors.value.confirmPassword = 'စကားဝှက်မတူပါ'
-    isValid = false
-  }
-
-  return isValid
-}
-
-async function handleSubmit() {
-  if (!validateForm()) return
-
-  loading.value = true
-  error.value = ''
-
-  try {
-    await auth.register({
-      name: name.value,
-      phone: phone.value,
-      password: password.value
-    })
-    router.push('/')
-  } catch (err) {
-    error.value = err.message || 'အကောင့်ဖွင့်ရာတွင်အမှားရှိနေပါသည်'
-  } finally {
-    loading.value = false
-  }
-}
 </script>
+
+<style scoped>
+.form-input {
+  @apply block w-full rounded-lg shadow-sm;
+  @apply focus:ring-2 focus:ring-primary focus:border-primary;
+}
+
+.form-input.error {
+  @apply border-error focus:ring-error focus:border-error;
+}
+
+.form-label {
+  @apply block text-sm font-medium text-text-secondary mb-1;
+}
+</style>

@@ -1,12 +1,23 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import Home from '../views/Home.vue'
 import { useAuthStore } from '../stores/auth'
 
 const routes = [
   {
     path: '/',
     name: 'Home',
-    component: Home
+    component: () => import('@/views/football/MatchList.vue')
+  },
+  {
+    path: '/betting/:id',
+    name: 'MatchBetting',
+    component: () => import('@/views/betting/MatchBetting.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/bets',
+    name: 'BettingHistory',
+    component: () => import('@/views/betting/BettingHistory.vue'),
+    meta: { requiresAuth: true }
   },
   {
     path: '/2d',

@@ -47,11 +47,11 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 
     // Football routes
-    Route::prefix('football')->group(function () {
-        Route::get('/matches', [FootballController::class, 'getMatches']);
-        Route::get('/matches/{match}', [FootballController::class, 'getMatch']);
-        Route::post('/bet', [FootballController::class, 'placeBet']);
-        Route::get('/bets', [FootballController::class, 'getBets']);
+    Route::prefix('matches')->group(function () {
+        Route::get('/', [FootballController::class, 'getMatches']);
+        Route::get('/{match}', [FootballController::class, 'getMatch']);
+        Route::post('/bet', [FootballController::class, 'placeBet'])->middleware('auth:sanctum');
+        Route::get('/bets/history', [FootballController::class, 'getBettingHistory'])->middleware('auth:sanctum');
     });
 
     // Betting routes
