@@ -203,15 +203,26 @@ function togglePassword() {
 
 <style scoped>
 .form-input {
-  @apply block w-full rounded-lg shadow-sm;
-  @apply focus:ring-2 focus:ring-primary focus:border-primary;
+  @apply block w-full rounded-lg border border-gray-600 bg-gray-800 px-4 py-2 text-white focus:border-primary focus:ring-primary;
 }
 
 .form-input.error {
-  @apply border-error focus:ring-error focus:border-error;
+  @apply border-red-500;
 }
 
 .form-label {
-  @apply block text-sm font-medium text-gray-400 mb-1;
+  @apply block text-sm font-medium text-gray-300 mb-1;
+}
+
+.btn {
+  @apply py-2 px-4 rounded-lg font-medium focus:outline-none focus:ring-2 focus:ring-offset-2;
+}
+
+.btn-primary {
+  @apply bg-primary text-white hover:bg-primary-dark focus:ring-primary;
+}
+
+.text-error {
+  @apply text-red-500;
 }
 </style>
