@@ -332,6 +332,13 @@ export const laosLotteryTemplate = `
     </div>
 `;
 
+export const loadingTemplate = `
+    <div class="loading-container">
+        <div class="loading-spinner"></div>
+        <p>ခဏစောင့်ပါ...</p>
+    </div>
+`;
+
 function getLoadingTemplate() {
     return `
         <div class="loading-container">

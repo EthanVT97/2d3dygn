@@ -47,10 +47,13 @@
 }
 
 body {
-    background: var(--background-color) url('/images/pattern.png') repeat;
+    font-family: 'Padauk', sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: var(--background-color);
     color: var(--text-color);
     line-height: 1.6;
-    transition: background-color 0.3s, color 0.3s;
+    min-height: 100vh;
 }
 
 .container {
