@@ -107,33 +107,22 @@
     </main>
 
     <!-- Footer -->
-    <footer class="bg-surface py-8 mt-auto">
+    <footer class="bg-background-secondary py-12">
       <div class="container mx-auto px-4">
         <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
           <div>
             <h3 class="text-lg font-semibold mb-4">About Us</h3>
             <p class="text-text-secondary">
-              Myanmar Betting - Your trusted platform for secure and enjoyable betting experience.
+              Myanmar's premier online betting platform for 2D, 3D, and Thai lottery.
             </p>
           </div>
           <div>
             <h3 class="text-lg font-semibold mb-4">Quick Links</h3>
             <ul class="space-y-2">
-              <li>
-                <router-link to="/terms" class="hover:text-primary">
-                  Terms & Conditions
-                </router-link>
-              </li>
-              <li>
-                <router-link to="/privacy" class="hover:text-primary">
-                  Privacy Policy
-                </router-link>
-              </li>
-              <li>
-                <router-link to="/contact" class="hover:text-primary">
-                  Contact Us
-                </router-link>
-              </li>
+              <li><router-link to="/" class="text-text-secondary hover:text-primary">Home</router-link></li>
+              <li><router-link to="/2d" class="text-text-secondary hover:text-primary">2D</router-link></li>
+              <li><router-link to="/3d" class="text-text-secondary hover:text-primary">3D</router-link></li>
+              <li><router-link to="/thai" class="text-text-secondary hover:text-primary">Thai</router-link></li>
             </ul>
           </div>
           <div>
@@ -150,7 +139,7 @@
         </div>
       </div>
     </footer>
-    <ApiTest v-if="import.meta.env.DEV" />
+    <ApiTest v-if="showApiTest" />
   </div>
 </template>
 
@@ -172,6 +161,8 @@ const navItems = [
 const isMobileMenuOpen = ref(false)
 
 const isAuthenticated = computed(() => auth.isAuthenticated)
+
+const showApiTest = ref(process.env.NODE_ENV === 'development')
 
 function toggleMobileMenu() {
   isMobileMenuOpen.value = !isMobileMenuOpen.value

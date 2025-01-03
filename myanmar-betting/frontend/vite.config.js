@@ -14,10 +14,23 @@ export default defineConfig({
       '@utils': path.resolve(__dirname, './src/utils'),
     },
   },
+  define: {
+    'process.env': {
+      NODE_ENV: JSON.stringify(process.env.NODE_ENV),
+      VITE_API_BASE_URL: JSON.stringify(process.env.VITE_API_BASE_URL || 'https://myanmar-betting-api.onrender.com')
+    }
+  },
   build: {
     outDir: 'dist',
     assetsDir: 'assets',
     sourcemap: false,
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: true,
+        drop_debugger: true
+      }
+    },
     chunkSizeWarningLimit: 1500,
     rollupOptions: {
       output: {
