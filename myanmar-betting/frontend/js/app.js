@@ -13,8 +13,8 @@ function router() {
         loadUserData();
         loadProfileData();
     } else {
-        app.innerHTML = landingTemplate;
-        setupLandingHandlers();
+        app.innerHTML = loginTemplate;
+        setupLoginHandlers();
     }
 }
 
@@ -25,19 +25,28 @@ function setupLoginHandlers() {
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
             const app = document.getElementById('app');
-            app.innerHTML = loadingTemplate;  // Show loading template
-
-            const phone = document.getElementById('phone').value;
-            const password = document.getElementById('password').value;
+            
+            // Get form values before showing loading screen
+            const phoneInput = document.getElementById('phone');
+            const passwordInput = document.getElementById('password');
+            
+            if (!phoneInput || !passwordInput) {
+                showError('Form elements not found');
+                return;
+            }
+            
+            const phone = phoneInput.value;
+            const password = passwordInput.value;
+            
+            if (!phone || !password) {
+                showError('ဖုန်းနံပါတ်နှင့် စကားဝှက်ကို ဖြည့်သွင်းပေးပါ။');
+                return;
+            }
+            
+            // Show loading screen
+            app.innerHTML = loadingTemplate;
 
             try {
-                if (!phone || !password) {
-                    app.innerHTML = loginTemplate;
-                    showError('ဖုန်းနံပါတ်နှင့် စကားဝှက်ကို ဖြည့်သွင်းပေးပါ။');
-                    setupLoginHandlers();
-                    return;
-                }
-
                 const data = await api.login(phone, password);
                 if (data.success) {
                     localStorage.setItem('auth_token', data.token);
