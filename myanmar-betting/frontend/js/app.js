@@ -48,7 +48,7 @@ function setupLoginHandlers() {
 
             try {
                 const data = await api.login(phone, password);
-                if (data.success) {
+                if (data.token) {
                     localStorage.setItem('auth_token', data.token);
                     router();
                 } else {
@@ -436,14 +436,26 @@ function updateThemeIcon(theme) {
 initTheme();
 
 // Add event listener for theme toggle
-document.addEventListener('click', (e) => {
-    if (e.target.closest('#theme-toggle')) {
-        toggleTheme();
+document.addEventListener('DOMContentLoaded', () => {
+    const themeToggle = document.getElementById('theme-toggle');
+    if (themeToggle) {
+        themeToggle.addEventListener('click', toggleTheme);
     }
+    
+    // Initialize router
+    router();
 });
 
-// Auto-update lucky numbers
-setInterval(updateTodayNumbers, 60000); // Update every minute
+// Add event listeners for tab switching
+document.addEventListener('click', (e) => {
+    const tab = e.target.closest('.tab');
+    if (tab) {
+        const tabId = tab.dataset.tab;
+        if (tabId) {
+            switchTab(tabId);
+        }
+    }
+});
 
 // Tab switching animation handler
 function switchTab(tabId) {
@@ -470,15 +482,5 @@ function switchTab(tabId) {
     }
 }
 
-// Add event listeners for tab switching
-document.addEventListener('click', (e) => {
-    const tab = e.target.closest('.tab');
-    if (tab) {
-        const tabId = tab.dataset.tab;
-        switchTab(tabId);
-    }
-});
-
-// Initialize
-window.addEventListener('popstate', router);
-window.addEventListener('DOMContentLoaded', router);
+// Auto-update lucky numbers
+setInterval(updateTodayNumbers, 60000); // Update every minute
