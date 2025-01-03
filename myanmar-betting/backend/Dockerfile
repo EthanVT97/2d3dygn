@@ -25,14 +25,15 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 # Set working directory
 WORKDIR /var/www
 
-# Copy existing application directory
+# Copy existing application directory contents
+COPY composer.* ./
 COPY . .
+
+# Copy environment file
+COPY .env.production .env
 
 # Install dependencies
 RUN composer install --no-dev --optimize-autoloader --no-interaction
-
-# Set production environment
-RUN cp .env.production .env
 
 # Set permissions for storage
 RUN chmod -R 775 storage bootstrap/cache
