@@ -50,14 +50,14 @@ const api = {
 
     // Auth endpoints
     async login(phone, password) {
-        return this.request('/login', {
+        return this.request('/auth/login', {
             method: 'POST',
             body: JSON.stringify({ phone, password }),
         });
     },
 
     async logout() {
-        return this.request('/logout', {
+        return this.request('/auth/logout', {
             method: 'POST',
         });
     },
@@ -111,11 +111,11 @@ const api = {
 
     // Thai Lottery endpoints
     getThaiLotteryInfo() {
-        return this.request('/thai-lottery/info', { method: 'GET' });
+        return this.request('/lottery/thai');
     },
 
     placeThaiBet(number, amount) {
-        return this.request('/thai-lottery/bet', {
+        return this.request('/lottery/thai/bet', {
             method: 'POST',
             body: JSON.stringify({ number, amount })
         });
@@ -123,15 +123,15 @@ const api = {
 
     // Laos Lottery endpoints
     getLaosLotteryInfo() {
-        return this.request('/laos-lottery/info', { method: 'GET' });
+        return this.request('/lottery/laos');
     },
 
     placeLaosBet(number, amount) {
-        return this.request('/laos-lottery/bet', {
+        return this.request('/lottery/laos/bet', {
             method: 'POST',
             body: JSON.stringify({ number, amount })
         });
-    }
+    },
 };
 
 export default api;
