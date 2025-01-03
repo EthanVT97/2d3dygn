@@ -17,7 +17,7 @@ return [
 
     'stateful' => explode(',', env('SANCTUM_STATEFUL_DOMAINS', sprintf(
         '%s%s',
-        'localhost:5173,myanmar-betting.onrender.com',
+        'localhost:5173,myanmar-betting.onrender.com,myanmar-betting-backend.onrender.com',
         Sanctum::currentApplicationUrlWithPort()
     ))),
 

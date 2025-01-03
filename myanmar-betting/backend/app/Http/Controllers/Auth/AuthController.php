@@ -19,27 +19,36 @@ class AuthController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'phone' => 'required|string|unique:users,phone',
-            'email' => 'required|string|email|max:255|unique:users',
+            'phone' => ['required', 'string', 'unique:users,phone', 'regex:/^(09|\+?959)\d{7,9}$/'],
+            'email' => 'nullable|string|email|max:255|unique:users',
             'password' => 'required|string|min:8|confirmed',
         ]);
 
-        $user = User::create([
-            'name' => $request->name,
-            'phone' => $request->phone,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-            'role' => 'user',
-            'balance' => 0,
-        ]);
+        try {
+            $user = User::create([
+                'name' => $request->name,
+                'phone' => $request->phone,
+                'email' => $request->email,
+                'password' => Hash::make($request->password),
+                'role' => 'user',
+                'balance' => 0,
+                'is_admin' => false,
+            ]);
 
-        $token = $user->createToken('auth_token')->plainTextToken;
+            $token = $user->createToken('auth_token')->plainTextToken;
 
-        return response()->json([
-            'user' => $user,
-            'token' => $token,
-            'token_type' => 'Bearer',
-        ], 201);
+            return response()->json([
+                'user' => $user,
+                'token' => $token,
+                'token_type' => 'Bearer',
+            ], 201);
+        } catch (\Exception $e) {
+            \Log::error('Registration error: ' . $e->getMessage());
+            return response()->json([
+                'message' => 'Registration failed. Please try again.',
+                'error' => config('app.debug') ? $e->getMessage() : null
+            ], 500);
+        }
     }
 
     /**
