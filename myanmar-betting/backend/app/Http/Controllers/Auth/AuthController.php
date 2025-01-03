@@ -43,7 +43,7 @@ class AuthController extends Controller
                 'token_type' => 'Bearer',
             ], 201);
         } catch (\Exception $e) {
-            \Log::error('Registration error: ' . $e->getMessage());
+            Log::error('Registration error: ' . $e->getMessage());
             return response()->json([
                 'message' => 'Registration failed. Please try again.',
                 'error' => config('app.debug') ? $e->getMessage() : null
