@@ -7,6 +7,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
@@ -46,25 +47,48 @@ class AuthController extends Controller
      */
     public function login(Request $request)
     {
-        $request->validate([
-            'email' => 'required|string|email',
-            'password' => 'required|string',
-        ]);
-
-        if (!Auth::attempt($request->only('email', 'password'))) {
-            throw ValidationException::withMessages([
-                'email' => ['The provided credentials are incorrect.'],
+        try {
+            $request->validate([
+                'phone' => 'required|string',
+                'password' => 'required|string',
             ]);
+
+            // Check if user exists
+            $user = User::where('phone', $request->phone)->first();
+            
+            if (!$user) {
+                return response()->json([
+                    'message' => 'ဖုန်းနံပါတ် သို့မဟုတ် စကားဝှက် မှားယွင်းနေပါသည်။'
+                ], 401);
+            }
+
+            // Check password
+            if (!Hash::check($request->password, $user->password)) {
+                return response()->json([
+                    'message' => 'ဖုန်းနံပါတ် သို့မဟုတ် စကားဝှက် မှားယွင်းနေပါသည်။'
+                ], 401);
+            }
+
+            // Create token
+            $token = $user->createToken('auth_token')->plainTextToken;
+
+            return response()->json([
+                'user' => $user,
+                'token' => $token,
+                'token_type' => 'Bearer',
+            ]);
+            
+        } catch (ValidationException $e) {
+            return response()->json([
+                'message' => 'Validation error',
+                'errors' => $e->errors(),
+            ], 422);
+        } catch (\Exception $e) {
+            Log::error('Login error: ' . $e->getMessage());
+            return response()->json([
+                'message' => 'Server error occurred. Please try again later.',
+            ], 500);
         }
-
-        $user = User::where('email', $request->email)->firstOrFail();
-        $token = $user->createToken('auth_token')->plainTextToken;
-
-        return response()->json([
-            'user' => $user,
-            'token' => $token,
-            'token_type' => 'Bearer',
-        ]);
     }
 
     /**
@@ -72,7 +96,14 @@ class AuthController extends Controller
      */
     public function user(Request $request)
     {
-        return response()->json($request->user());
+        try {
+            return response()->json($request->user());
+        } catch (\Exception $e) {
+            Log::error('User fetch error: ' . $e->getMessage());
+            return response()->json([
+                'message' => 'Error fetching user data'
+            ], 500);
+        }
     }
 
     /**
@@ -80,10 +111,16 @@ class AuthController extends Controller
      */
     public function logout(Request $request)
     {
-        $request->user()->currentAccessToken()->delete();
-
-        return response()->json([
-            'message' => 'Successfully logged out',
-        ]);
+        try {
+            $request->user()->currentAccessToken()->delete();
+            return response()->json([
+                'message' => 'Successfully logged out'
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Logout error: ' . $e->getMessage());
+            return response()->json([
+                'message' => 'Error occurred during logout'
+            ], 500);
+        }
     }
 }

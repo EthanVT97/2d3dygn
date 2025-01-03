@@ -6,6 +6,7 @@ use App\Http\Controllers\BettingController;
 use App\Http\Controllers\FootballController;
 use App\Http\Controllers\LotteryController;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\DB;
 
 /*
 |--------------------------------------------------------------------------
@@ -19,6 +20,26 @@ use Illuminate\Support\Facades\Route;
 */
 
 // Public routes
+Route::get('/health-check', function() {
+    try {
+        // Check database connection
+        DB::connection()->getPdo();
+        
+        return response()->json([
+            'status' => 'healthy',
+            'database' => 'connected',
+            'timestamp' => now()->toIso8601String()
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'status' => 'unhealthy',
+            'database' => 'disconnected',
+            'error' => $e->getMessage(),
+            'timestamp' => now()->toIso8601String()
+        ], 500);
+    }
+});
+
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 
