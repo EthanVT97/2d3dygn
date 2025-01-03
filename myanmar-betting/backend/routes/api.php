@@ -42,31 +42,35 @@ Route::get('/health-check', function() {
 
 Route::get('/test-db', [App\Http\Controllers\TestController::class, 'testConnection']);
 
-Route::post('/register', [AuthController::class, 'register']);
-Route::post('/login', [AuthController::class, 'login']);
+// Auth routes
+Route::group(['prefix' => 'auth'], function () {
+    Route::post('/register', [AuthController::class, 'register']);
+    Route::post('/login', [AuthController::class, 'login']);
+    Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
+});
 
 // Protected routes
 Route::middleware('auth:sanctum')->group(function () {
-    // Auth routes
-    Route::post('/logout', [AuthController::class, 'logout']);
+    // User routes
     Route::get('/user', [AuthController::class, 'user']);
+    Route::get('/balance', [BettingController::class, 'getBalance']);
+    Route::get('/transactions', [BettingController::class, 'getTransactions']);
+
+    // Profile routes
+    Route::get('/profile', [AuthController::class, 'profile']);
+    Route::post('/profile/password', [AuthController::class, 'updatePassword']);
+
+    // Payment routes
+    Route::post('/deposit', [BettingController::class, 'deposit']);
+    Route::post('/withdraw', [BettingController::class, 'withdraw']);
 
     // Lottery routes
     Route::prefix('lottery')->group(function () {
-        // 2D routes
-        Route::get('/2d/results', [LotteryController::class, 'getTwoDResults']);
-        Route::post('/2d/bet', [LotteryController::class, 'placeTwoDBet']);
-        Route::get('/2d/history', [LotteryController::class, 'getTwoDHistory']);
-
-        // 3D routes
-        Route::get('/3d/results', [LotteryController::class, 'getThreeDResults']);
-        Route::post('/3d/bet', [LotteryController::class, 'placeThreeDBet']);
-        Route::get('/3d/history', [LotteryController::class, 'getThreeDHistory']);
-
-        // Thai lottery routes
-        Route::get('/thai/results', [LotteryController::class, 'getThaiResults']);
+        Route::post('/bet', [LotteryController::class, 'placeBet']);
+        Route::get('/thai', [LotteryController::class, 'getThaiLotteryInfo']);
         Route::post('/thai/bet', [LotteryController::class, 'placeThaiLotteryBet']);
-        Route::get('/thai/history', [LotteryController::class, 'getThaiHistory']);
+        Route::get('/laos', [LotteryController::class, 'getLaosLotteryInfo']);
+        Route::post('/laos/bet', [LotteryController::class, 'placeLaosLotteryBet']);
     });
 
     // Football routes
