@@ -24,13 +24,17 @@ function setupLoginHandlers() {
     if (form) {
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
-            showLoading();
+            const app = document.getElementById('app');
+            app.innerHTML = loadingTemplate;  // Show loading template
+
             const phone = document.getElementById('phone').value;
             const password = document.getElementById('password').value;
 
             try {
                 if (!phone || !password) {
+                    app.innerHTML = loginTemplate;
                     showError('ဖုန်းနံပါတ်နှင့် စကားဝှက်ကို ဖြည့်သွင်းပေးပါ။');
+                    setupLoginHandlers();
                     return;
                 }
 
@@ -39,12 +43,15 @@ function setupLoginHandlers() {
                     localStorage.setItem('auth_token', data.token);
                     router();
                 } else {
+                    app.innerHTML = loginTemplate;
                     showError('ဖုန်းနံပါတ် သို့မဟုတ် စကားဝှက် မှားယွင်းနေပါသည်။');
+                    setupLoginHandlers();
                 }
             } catch (error) {
+                console.error('Login error:', error);
+                app.innerHTML = loginTemplate;
                 showError('ဆာဗာနှင့် ဆက်သွယ်၍မရပါ။ နောက်မှ ထပ်ကြိုးစားကြည့်ပါ။');
-            } finally {
-                hideLoading();
+                setupLoginHandlers();
             }
         });
     }
