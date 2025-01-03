@@ -1,314 +1,20 @@
-// Constants
-const API_URL = 'https://myanmar-betting-api.onrender.com/api';
-const TOKEN_KEY = 'auth_token';
-
-// Debug mode
-const DEBUG = true;
-
-// API Helper
-const api = {
-    async request(endpoint, options = {}) {
-        const url = `${API_URL}${endpoint}`;
-        const token = localStorage.getItem(TOKEN_KEY);
-        
-        const defaultOptions = {
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json',
-                ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
-            },
-            credentials: 'include',
-        };
-
-        const fetchOptions = {
-            ...defaultOptions,
-            ...options,
-            headers: {
-                ...defaultOptions.headers,
-                ...(options.headers || {}),
-            },
-        };
-
-        try {
-            if (DEBUG) console.log(`API Request: ${url}`, fetchOptions);
-            
-            const response = await fetch(url, fetchOptions);
-            const data = await response.json();
-
-            if (DEBUG) console.log(`API Response: ${url}`, data);
-
-            if (!response.ok) {
-                throw new Error(data.message || 'API request failed');
-            }
-
-            return data;
-        } catch (error) {
-            console.error(`API Error: ${url}`, error);
-            throw error;
-        }
-    },
-
-    // Auth endpoints
-    async login(phone, password) {
-        return this.request('/login', {
-            method: 'POST',
-            body: JSON.stringify({ phone, password }),
-        });
-    },
-
-    async logout() {
-        return this.request('/logout', {
-            method: 'POST',
-        });
-    },
-
-    // User data endpoints
-    async getBalance() {
-        return this.request('/balance');
-    },
-
-    async getTransactions() {
-        return this.request('/transactions');
-    },
-
-    // Betting endpoints
-    async placeBet(numbers, amount) {
-        return this.request('/lottery/bet', {
-            method: 'POST',
-            body: JSON.stringify({
-                numbers: numbers.split(',').map(n => n.trim()),
-                amount: parseFloat(amount),
-            }),
-        });
-    },
-};
-
-// HTML Templates
-const loginTemplate = `
-    <div class="login-container fadeIn">
-        <h1><i class="fas fa-coins"></i> 2D3D ထီဆိုင်</h1>
-        <form id="loginForm" class="login-form">
-            <div class="form-group">
-                <label for="phone"><i class="fas fa-phone"></i> ဖုန်းနံပါတ်</label>
-                <input type="tel" id="phone" name="phone" required placeholder="09xxxxxxxxx" pattern="[0-9]{11}">
-            </div>
-            <div class="form-group">
-                <label for="password"><i class="fas fa-lock"></i> စကားဝှက်</label>
-                <input type="password" id="password" name="password" required placeholder="စကားဝှက်ရိုက်ထည့်ပါ">
-            </div>
-            <button type="submit" class="btn btn-primary">
-                <i class="fas fa-sign-in-alt"></i> ဝင်ရောက်မည်
-            </button>
-        </form>
-    </div>
-`;
-
-const mainTemplate = `
-    <header class="header">
-        <nav class="nav container">
-            <h1><i class="fas fa-coins"></i> 2D3D ထီဆိုင်</h1>
-            <div class="nav-balance">
-                <i class="fas fa-wallet"></i>
-                <span>လက်ကျန်ငွေ: <span id="balance">0</span> ကျပ်</span>
-                <button id="logoutBtn" class="btn btn-secondary">
-                    <i class="fas fa-sign-out-alt"></i> ထွက်မည်
-                </button>
-            </div>
-        </nav>
-    </header>
-
-    <main class="container fadeIn">
-        <div class="lucky-numbers">
-            <i class="fas fa-star"></i> ယနေ့ထွက်ဂဏန်း: <span id="todayNumbers">12:00 PM - ထွက်ရန်ကျန်</span>
-        </div>
-
-        <div class="lottery-tabs">
-            <button class="tab-button active" data-tab="2d">
-                <i class="fas fa-dice-two"></i> 2D ထီ
-            </button>
-            <button class="tab-button" data-tab="3d">
-                <i class="fas fa-dice-three"></i> 3D ထီ
-            </button>
-        </div>
-
-        <section id="2d-section" class="betting-section fadeIn">
-            <h2><i class="fas fa-dice-two"></i> 2D ထီထိုးမည်</h2>
-            <form id="betting2dForm" class="betting-form">
-                <div class="form-group">
-                    <label for="numbers2d">
-                        <i class="fas fa-sort-numeric-up"></i> ထီဂဏန်း (ဥပမာ - 23,45)
-                    </label>
-                    <input type="text" 
-                           id="numbers2d" 
-                           class="form-control" 
-                           required 
-                           placeholder="ဂဏန်းနှစ်လုံး ရိုက်ထည့်ပါ"
-                           pattern="[0-9]{2}"
-                           maxlength="2">
-                </div>
-                <div class="form-group">
-                    <label for="amount2d">
-                        <i class="fas fa-money-bill-wave"></i> ငွေပမာဏ (ကျပ်)
-                    </label>
-                    <input type="number" 
-                           id="amount2d" 
-                           class="form-control" 
-                           min="100" 
-                           step="100" 
-                           required 
-                           placeholder="ထိုးမည့်ငွေပမာဏ">
-                </div>
-                <button type="submit" class="btn btn-primary">
-                    <i class="fas fa-check-circle"></i> ထီထိုးမည်
-                </button>
-            </form>
-        </section>
-
-        <section id="3d-section" class="betting-section fadeIn" style="display: none;">
-            <h2><i class="fas fa-dice-three"></i> 3D ထီထိုးမည်</h2>
-            <form id="betting3dForm" class="betting-form">
-                <div class="form-group">
-                    <label for="numbers3d">
-                        <i class="fas fa-sort-numeric-up"></i> ထီဂဏန်း (ဥပမာ - 234,567)
-                    </label>
-                    <input type="text" 
-                           id="numbers3d" 
-                           class="form-control" 
-                           required 
-                           placeholder="ဂဏန်းသုံးလုံး ရိုက်ထည့်ပါ"
-                           pattern="[0-9]{3}"
-                           maxlength="3">
-                </div>
-                <div class="form-group">
-                    <label for="amount3d">
-                        <i class="fas fa-money-bill-wave"></i> ငွေပမာဏ (ကျပ်)
-                    </label>
-                    <input type="number" 
-                           id="amount3d" 
-                           class="form-control" 
-                           min="100" 
-                           step="100" 
-                           required 
-                           placeholder="ထိုးမည့်ငွေပမာဏ">
-                </div>
-                <button type="submit" class="btn btn-primary">
-                    <i class="fas fa-check-circle"></i> ထီထိုးမည်
-                </button>
-            </form>
-        </section>
-
-        <section class="betting-section fadeIn">
-            <h2><i class="fas fa-history"></i> ထီထိုးမှတ်တမ်း</h2>
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th><i class="fas fa-calendar-alt"></i> ရက်စွဲ</th>
-                        <th><i class="fas fa-sort-numeric-up"></i> ထီဂဏန်း</th>
-                        <th><i class="fas fa-money-bill-wave"></i> ငွေပမာဏ</th>
-                        <th><i class="fas fa-info-circle"></i> အခြေအနေ</th>
-                    </tr>
-                </thead>
-                <tbody id="historyTable">
-                </tbody>
-            </table>
-        </section>
-    </main>
-`;
-
-// Helper Functions
-function formatMoney(amount) {
-    return new Intl.NumberFormat('my-MM').format(amount);
-}
-
-function formatDate(dateString) {
-    const options = { 
-        year: 'numeric', 
-        month: 'long', 
-        day: 'numeric', 
-        hour: 'numeric', 
-        minute: 'numeric',
-        hour12: true
-    };
-    return new Date(dateString).toLocaleDateString('my-MM', options);
-}
-
-function getTransactionStatus(status) {
-    const statusClasses = {
-        pending: 'status-pending',
-        completed: 'status-completed',
-        won: 'status-won',
-        lost: 'status-lost'
-    };
-
-    const statusText = {
-        pending: 'စောင့်ဆိုင်းဆဲ',
-        completed: 'ပြီးဆုံး',
-        won: 'ထီပေါက်',
-        lost: 'မပေါက်'
-    };
-
-    const statusClass = statusClasses[status.toLowerCase()] || '';
-    const text = statusText[status.toLowerCase()] || status;
-
-    return `<span class="status-badge ${statusClass}">${text}</span>`;
-}
-
-function updateTodayNumbers() {
-    const now = new Date();
-    const noon = new Date(now);
-    noon.setHours(12, 0, 0, 0);
-
-    const evening = new Date(now);
-    evening.setHours(16, 30, 0, 0);
-
-    const numbersElement = document.getElementById('todayNumbers');
-    if (!numbersElement) return;
-
-    if (now < noon) {
-        const timeLeft = Math.floor((noon - now) / (1000 * 60));
-        numbersElement.textContent = `12:00 PM - ${timeLeft} မိနစ် ကျန်ပါသေးသည်`;
-    } else if (now < evening) {
-        const timeLeft = Math.floor((evening - now) / (1000 * 60));
-        numbersElement.textContent = `4:30 PM - ${timeLeft} မိနစ် ကျန်ပါသေးသည်`;
-    } else {
-        numbersElement.textContent = 'ယနေ့အတွက် ပိတ်ပါပြီ';
-    }
-}
+import api from '/js/api.js';
+import { landingTemplate, loginTemplate, mainTemplate, loadingTemplate } from '/js/templates.js';
+import { formatMoney, formatDate, getTransactionStatus, updateTodayNumbers } from '/js/utils.js';
 
 // Router
 function router() {
     const app = document.getElementById('app');
-    const token = localStorage.getItem(TOKEN_KEY);
-    const path = window.location.pathname;
-    const params = new URLSearchParams(window.location.search);
-    const redirect = params.get('redirect') || '/';
+    const token = localStorage.getItem('auth_token');
 
-    if (!token && path !== '/login') {
-        window.location.href = `/login?redirect=${encodeURIComponent(path)}`;
-        return;
-    }
-
-    if (token && path === '/login') {
-        window.location.href = redirect;
-        return;
-    }
-
-    switch (path) {
-        case '/login':
-            app.innerHTML = loginTemplate;
-            setupLoginHandlers();
-            break;
-        case '/':
-            if (!token) {
-                window.location.href = '/login?redirect=/';
-                return;
-            }
-            app.innerHTML = mainTemplate;
-            setupMainHandlers();
-            loadUserData();
-            break;
-        default:
-            window.location.href = '/';
+    if (token) {
+        app.innerHTML = mainTemplate;
+        setupMainHandlers();
+        loadUserData();
+        loadProfileData();
+    } else {
+        app.innerHTML = landingTemplate;
+        setupLandingHandlers();
     }
 }
 
@@ -318,17 +24,49 @@ function setupLoginHandlers() {
     if (form) {
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
+            showLoading();
             const phone = document.getElementById('phone').value;
             const password = document.getElementById('password').value;
 
             try {
+                if (!phone || !password) {
+                    showError('ဖုန်းနံပါတ်နှင့် စကားဝှက်ကို ဖြည့်သွင်းပေးပါ။');
+                    return;
+                }
+
                 const data = await api.login(phone, password);
-                localStorage.setItem(TOKEN_KEY, data.token);
-                const params = new URLSearchParams(window.location.search);
-                window.location.href = params.get('redirect') || '/';
+                if (data.success) {
+                    localStorage.setItem('auth_token', data.token);
+                    router();
+                } else {
+                    showError('ဖုန်းနံပါတ် သို့မဟုတ် စကားဝှက် မှားယွင်းနေပါသည်။');
+                }
             } catch (error) {
-                alert(error.message);
+                showError('ဆာဗာနှင့် ဆက်သွယ်၍မရပါ။ နောက်မှ ထပ်ကြိုးစားကြည့်ပါ။');
+            } finally {
+                hideLoading();
             }
+        });
+    }
+}
+
+function setupLandingHandlers() {
+    const loginBtn = document.getElementById('loginBtn');
+    const startBtn = document.getElementById('startBtn');
+
+    if (loginBtn) {
+        loginBtn.addEventListener('click', () => {
+            const app = document.getElementById('app');
+            app.innerHTML = loginTemplate;
+            setupLoginHandlers();
+        });
+    }
+
+    if (startBtn) {
+        startBtn.addEventListener('click', () => {
+            const app = document.getElementById('app');
+            app.innerHTML = loginTemplate;
+            setupLoginHandlers();
         });
     }
 }
@@ -337,6 +75,10 @@ function setupMainHandlers() {
     setupLogoutHandler();
     setupBettingHandlers();
     setupTabHandlers();
+    setupProfileHandlers();
+    setupPaymentHandlers();
+    setupThaiLotteryHandlers();
+    setupLaosLotteryHandlers();
 }
 
 function setupTabHandlers() {
@@ -376,12 +118,21 @@ function setupBettingForm(type) {
             const amount = document.getElementById(`amount${type}`).value;
 
             try {
+                if (!numbers || !amount) {
+                    showError('နံပါတ်များနှင့် ငွေပမာဏကို ဖြည့်သွင်းပေးပါ။');
+                    return;
+                }
+
                 const data = await api.placeBet(numbers, amount);
-                alert('ထီထိုးခြင်း အောင်မြင်ပါသည်။');
-                loadUserData();
-                form.reset();
+                if (data.success) {
+                    alert('ထီထိုးခြင်း အောင်မြင်ပါသည်။');
+                    loadUserData();
+                    form.reset();
+                } else {
+                    showError('ထီထိုးခြင်း မအောင်မြင်ပါ။');
+                }
             } catch (error) {
-                alert(error.message || 'ထီထိုးခြင်း မအောင်မြင်ပါ။');
+                showError('ဆာဗာနှင့် ဆက်သွယ်၍မရပါ။ နောက်မှ ထပ်ကြိုးစားကြည့်ပါ။');
             }
         });
     }
@@ -396,10 +147,189 @@ function setupLogoutHandler() {
             } catch (error) {
                 console.error('Logout error:', error);
             } finally {
-                localStorage.removeItem(TOKEN_KEY);
-                window.location.href = '/login';
+                localStorage.removeItem('auth_token');
+                router();
             }
         });
+    }
+}
+
+// Profile Handlers
+function setupProfileHandlers() {
+    const changePasswordBtn = document.getElementById('changePasswordBtn');
+    
+    if (changePasswordBtn) {
+        changePasswordBtn.addEventListener('click', async () => {
+            const oldPassword = prompt('လက်ရှိစကားဝှက်ကို ထည့်ပါ:');
+            const newPassword = prompt('စကားဝှက်အသစ်ကို ထည့်ပါ:');
+            
+            try {
+                if (!oldPassword || !newPassword) {
+                    showError('လက်ရှိစကားဝှက်နှင့် စကားဝှက်အသစ်ကို ဖြည့်သွင်းပေးပါ။');
+                    return;
+                }
+
+                await api.updatePassword(oldPassword, newPassword);
+                alert('စကားဝှက် ပြောင်းလဲခြင်း အောင်မြင်ပါသည်။');
+            } catch (error) {
+                showError('စကားဝှက် ပြောင်းလဲခြင်း မအောင်မြင်ပါ။');
+            }
+        });
+    }
+}
+
+// Payment Handlers
+function setupPaymentHandlers() {
+    const methodCards = document.querySelectorAll('.method-card');
+    const depositForm = document.getElementById('depositForm');
+    const withdrawForm = document.getElementById('withdrawForm');
+
+    methodCards.forEach(card => {
+        card.addEventListener('click', () => {
+            const method = card.dataset.method;
+            if (depositForm) {
+                depositForm.style.display = 'block';
+                depositForm.dataset.method = method;
+            }
+            if (withdrawForm) {
+                withdrawForm.style.display = 'block';
+                withdrawForm.dataset.method = method;
+            }
+        });
+    });
+
+    if (depositForm) {
+        depositForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const amount = document.getElementById('depositAmount').value;
+            const transactionId = document.getElementById('transactionId').value;
+            const method = depositForm.dataset.method;
+
+            try {
+                if (!amount || !transactionId) {
+                    showError('ငွေပမာဏနှင့် ငွေသွင်းခြင်း ID ကို ဖြည့်သွင်းပေးပါ။');
+                    return;
+                }
+
+                await api.deposit(amount, transactionId, method);
+                alert('ငွေသွင်းခြင်း အောင်မြင်ပါသည်။');
+                loadUserData();
+            } catch (error) {
+                showError('ငွေသွင်းခြင်း မအောင်မြင်ပါ။');
+            }
+        });
+    }
+
+    if (withdrawForm) {
+        withdrawForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const amount = document.getElementById('withdrawAmount').value;
+            const phoneNumber = document.getElementById('phoneNumber').value;
+            const method = withdrawForm.dataset.method;
+
+            try {
+                if (!amount || !phoneNumber) {
+                    showError('ငွေပမာဏနှင့် ဖုန်းနံပါတ်ကို ဖြည့်သွင်းပေးပါ။');
+                    return;
+                }
+
+                await api.withdraw(amount, phoneNumber, method);
+                alert('ငွေထုတ်ခြင်း အောင်မြင်ပါသည်။');
+                loadUserData();
+            } catch (error) {
+                showError('ငွေထုတ်ခြင်း မအောင်မြင်ပါ။');
+            }
+        });
+    }
+}
+
+// Thai Lottery Handlers
+function setupThaiLotteryHandlers() {
+    const thaiBettingForm = document.getElementById('thaiBettingForm');
+    
+    if (thaiBettingForm) {
+        thaiBettingForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const number = document.getElementById('thaiNumber').value;
+            const amount = document.getElementById('thaiAmount').value;
+
+            try {
+                if (!number || !amount) {
+                    showError('နံပါတ်နှင့် ငွေပမာဏကို ဖြည့်သွင်းပေးပါ။');
+                    return;
+                }
+
+                await api.placeThaiBet(number, amount);
+                alert('ထိုင်းထီထိုးခြင်း အောင်မြင်ပါသည်။');
+                loadUserData();
+            } catch (error) {
+                showError('ထိုင်းထီထိုးခြင်း မအောင်မြင်ပါ။');
+            }
+        });
+    }
+
+    // Load Thai lottery info
+    loadThaiLotteryInfo();
+}
+
+// Laos Lottery Handlers
+function setupLaosLotteryHandlers() {
+    const laosBettingForm = document.getElementById('laosBettingForm');
+    
+    if (laosBettingForm) {
+        laosBettingForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const number = document.getElementById('laosNumber').value;
+            const amount = document.getElementById('laosAmount').value;
+
+            try {
+                if (!number || !amount) {
+                    showError('နံပါတ်နှင့် ငွေပမာဏကို ဖြည့်သွင်းပေးပါ။');
+                    return;
+                }
+
+                await api.placeLaosBet(number, amount);
+                alert('လာအိုထီထိုးခြင်း အောင်မြင်ပါသည်။');
+                loadUserData();
+            } catch (error) {
+                showError('လာအိုထီထိုးခြင်း မအောင်မြင်ပါ။');
+            }
+        });
+    }
+
+    // Load Laos lottery info
+    loadLaosLotteryInfo();
+}
+
+// Data Loading Functions
+async function loadThaiLotteryInfo() {
+    try {
+        const info = await api.getThaiLotteryInfo();
+        document.getElementById('thaiNextDraw').textContent = info.nextDraw;
+        document.getElementById('thaiLastResult').textContent = info.lastResult;
+    } catch (error) {
+        console.error('Error loading Thai lottery info:', error);
+    }
+}
+
+async function loadLaosLotteryInfo() {
+    try {
+        const info = await api.getLaosLotteryInfo();
+        document.getElementById('laosNextDraw').textContent = info.nextDraw;
+        document.getElementById('laosLastResult').textContent = info.lastResult;
+    } catch (error) {
+        console.error('Error loading Laos lottery info:', error);
+    }
+}
+
+async function loadProfileData() {
+    try {
+        const profile = await api.getProfile();
+        document.getElementById('userPhone').textContent = profile.phone;
+        document.getElementById('userBalance').textContent = formatMoney(profile.balance);
+        document.getElementById('lastLogin').textContent = formatDate(profile.lastLogin);
+    } catch (error) {
+        console.error('Error loading profile:', error);
     }
 }
 
@@ -407,7 +337,7 @@ async function loadUserData() {
     try {
         const [balanceData, historyData] = await Promise.all([
             api.getBalance(),
-            api.getTransactions(),
+            api.getTransactions()
         ]);
 
         updateBalance(balanceData.balance);
@@ -416,7 +346,8 @@ async function loadUserData() {
     } catch (error) {
         console.error('Error loading user data:', error);
         if (error.message === 'Unauthorized') {
-            window.location.href = '/login';
+            localStorage.removeItem('auth_token');
+            router();
         }
     }
 }
@@ -441,6 +372,96 @@ function updateHistory(transactions) {
         `).join('');
     }
 }
+
+function showLoading() {
+    document.getElementById('app').innerHTML = loadingTemplate;
+}
+
+function hideLoading() {
+    // This will be called by the specific page render functions
+}
+
+function showError(message, containerId = 'error-container') {
+    const container = document.getElementById(containerId);
+    if (container) {
+        container.innerHTML = getErrorTemplate(message);
+        
+        // Auto hide after 5 seconds
+        setTimeout(() => {
+            container.innerHTML = '';
+        }, 5000);
+    }
+}
+
+// Dark mode
+function initTheme() {
+    const theme = localStorage.getItem('theme') || 'light';
+    document.documentElement.setAttribute('data-theme', theme);
+    updateThemeIcon(theme);
+}
+
+function toggleTheme() {
+    const currentTheme = document.documentElement.getAttribute('data-theme');
+    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+    
+    document.documentElement.setAttribute('data-theme', newTheme);
+    localStorage.setItem('theme', newTheme);
+    updateThemeIcon(newTheme);
+}
+
+function updateThemeIcon(theme) {
+    const icon = document.querySelector('#theme-toggle i');
+    if (icon) {
+        icon.className = theme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+    }
+}
+
+// Initialize theme on page load
+initTheme();
+
+// Add event listener for theme toggle
+document.addEventListener('click', (e) => {
+    if (e.target.closest('#theme-toggle')) {
+        toggleTheme();
+    }
+});
+
+// Auto-update lucky numbers
+setInterval(updateTodayNumbers, 60000); // Update every minute
+
+// Tab switching animation handler
+function switchTab(tabId) {
+    // Hide all tab contents
+    const tabContents = document.querySelectorAll('.tab-content');
+    tabContents.forEach(content => {
+        content.classList.remove('active');
+    });
+    
+    // Remove active class from all tabs
+    const tabs = document.querySelectorAll('.tab');
+    tabs.forEach(tab => {
+        tab.classList.remove('active');
+    });
+    
+    // Show selected tab content with animation
+    const selectedContent = document.getElementById(tabId);
+    const selectedTab = document.querySelector(`[data-tab="${tabId}"]`);
+    
+    if (selectedContent && selectedTab) {
+        // Add active class to trigger animation
+        selectedContent.classList.add('active');
+        selectedTab.classList.add('active');
+    }
+}
+
+// Add event listeners for tab switching
+document.addEventListener('click', (e) => {
+    const tab = e.target.closest('.tab');
+    if (tab) {
+        const tabId = tab.dataset.tab;
+        switchTab(tabId);
+    }
+});
 
 // Initialize
 window.addEventListener('popstate', router);

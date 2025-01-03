@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: myanmar-betting-frontend
+    env: docker
+    buildCommand: docker build -t myanmar-betting-frontend .
+    startCommand: docker run -p $PORT:80 myanmar-betting-frontend
+    envVars:
+      - key: NODE_VERSION
+        value: 18
+      - key: VITE_API_URL
+        value: https://myanmar-betting-api.onrender.com
+    healthCheckPath: /
+    autoDeploy: true
