@@ -5,7 +5,8 @@ const routes = [
   {
     path: '/',
     name: 'Home',
-    component: () => import('@/views/football/MatchList.vue')
+    component: () => import('@/views/football/MatchList.vue'),
+    meta: { requiresAuth: true }
   },
   {
     path: '/betting/:id',
@@ -60,6 +61,16 @@ const routes = [
     name: 'AdminDashboard',
     component: () => import('../views/admin/Dashboard.vue'),
     meta: { requiresAuth: true, requiresAdmin: true }
+  },
+  {
+    path: '/forbidden',
+    name: 'Forbidden',
+    component: () => import('../views/errors/Forbidden.vue')
+  },
+  {
+    path: '/:pathMatch(.*)*',
+    name: 'NotFound',
+    component: () => import('../views/errors/NotFound.vue')
   }
 ]
 
@@ -69,28 +80,55 @@ const router = createRouter({
 })
 
 // Navigation guards
-router.beforeEach((to, from, next) => {
+router.beforeEach(async (to, from, next) => {
   const auth = useAuthStore()
+  const isAuthenticated = auth.isAuthenticated
 
-  // Check if route requires authentication
-  if (to.meta.requiresAuth && !auth.isAuthenticated) {
+  try {
+    // Check if route requires authentication
+    if (to.matched.some(record => record.meta.requiresAuth)) {
+      if (!isAuthenticated) {
+        // Not logged in, redirect to login
+        next({
+          name: 'Login',
+          query: { redirect: to.fullPath }
+        })
+        return
+      }
+
+      // Verify token is still valid
+      const isValid = await auth.checkAuth()
+      if (!isValid) {
+        next({
+          name: 'Login',
+          query: { redirect: to.fullPath }
+        })
+        return
+      }
+
+      // Check admin routes
+      if (to.matched.some(record => record.meta.requiresAdmin)) {
+        if (!auth.user?.is_admin) {
+          next({ name: 'Forbidden' })
+          return
+        }
+      }
+    }
+
+    // Check guest routes (login, register)
+    if (to.matched.some(record => record.meta.guest)) {
+      if (isAuthenticated) {
+        next({ name: 'Home' })
+        return
+      }
+    }
+
+    // Proceed with navigation
+    next()
+  } catch (error) {
+    console.error('Navigation error:', error)
     next({ name: 'Login' })
-    return
   }
-
-  // Check if route requires admin access
-  if (to.meta.requiresAdmin && !auth.isAdmin) {
-    next({ name: 'Home' })
-    return
-  }
-
-  // Check if route is for guests only (like login/register)
-  if (to.meta.guest && auth.isAuthenticated) {
-    next({ name: 'Home' })
-    return
-  }
-
-  next()
 })
 
 export default router

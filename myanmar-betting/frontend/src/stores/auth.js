@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia'
+import { ref, computed } from 'vue'
 import axios from 'axios'
 import { API_BASE_URL } from '../config/api'
 
@@ -12,135 +13,156 @@ const api = axios.create({
   }
 })
 
-export const useAuthStore = defineStore('auth', {
-  state: () => ({
-    user: null,
-    token: localStorage.getItem('token'),
-    loading: false,
-    error: null
-  }),
+export const useAuthStore = defineStore('auth', () => {
+  const token = ref(localStorage.getItem('token'))
+  const user = ref(null)
+  const loading = ref(false)
+  const error = ref(null)
 
-  getters: {
-    isAuthenticated: (state) => !!state.token,
-    isAdmin: (state) => state.user?.is_admin === 1,
-    userBalance: (state) => state.user?.balance || 0,
-  },
+  // Computed properties
+  const isAuthenticated = computed(() => !!token.value)
+  const isLoading = computed(() => loading.value)
+  const getError = computed(() => error.value)
+  const getUser = computed(() => user.value)
 
-  actions: {
-    async login(credentials) {
-      this.loading = true
-      this.error = null
+  // Actions
+  async function login(credentials) {
+    loading.value = true
+    error.value = null
+
+    try {
+      // Check API health first
+      const healthCheck = await api.get('/api/health-check').catch(() => null)
+      if (!healthCheck) {
+        throw new Error('API server is not responding. Please try again later.')
+      }
+
+      // Get CSRF cookie
+      await api.get('/sanctum/csrf-cookie')
       
-      try {
-        // Check if API is responding
-        try {
-          const response = await axios.get('/api/matches')
-          if (!response.data) {
-            throw new Error('Invalid response from server')
-          }
-        } catch (error) {
-          if (error.response?.status === 500) {
-            throw new Error('The server is currently experiencing issues. Please try again later.')
-          } else if (!error.response) {
-            throw new Error('Unable to connect to the server. Please check your internet connection.')
-          }
-        }
-
-        // Get CSRF cookie
-        await api.get('/sanctum/csrf-cookie')
-        
-        // Attempt login
-        const loginResponse = await api.post('/api/login', credentials)
-        
-        if (!loginResponse.data?.token) {
-          throw new Error('Invalid response from server: No token received')
-        }
-
-        // Set token in axios headers
-        api.defaults.headers.common['Authorization'] = `Bearer ${loginResponse.data.token}`
-        
-        // Store token and user data
-        localStorage.setItem('token', loginResponse.data.token)
-        this.token = loginResponse.data.token
-        this.user = loginResponse.data.user
-        
-        return loginResponse
-      } catch (error) {
-        this.error = error.response?.data?.message || error.message
-        throw error
-      } finally {
-        this.loading = false
+      // Attempt login
+      const response = await api.post('/api/login', credentials)
+      
+      if (!response.data?.token) {
+        throw new Error('Invalid response from server: No token received')
       }
-    },
 
-    async register(userData) {
-      try {
-        // Get CSRF cookie first
-        await api.get('/sanctum/csrf-cookie')
-        const response = await api.post('/api/register', userData)
-        this.setAuth(response.data)
-        return response
-      } catch (error) {
-        console.error('Register error:', error)
-        throw error
-      }
-    },
+      // Store token and user data
+      token.value = response.data.token
+      user.value = response.data.user
+      localStorage.setItem('token', response.data.token)
+      
+      // Set axios default header
+      api.defaults.headers.common['Authorization'] = `Bearer ${response.data.token}`
 
-    async logout() {
-      try {
-        if (this.token) {
-          await api.post('/api/logout')
-        }
-      } catch (error) {
-        console.error('Logout error:', error)
-      } finally {
-        this.clearAuth()
+      return response
+    } catch (e) {
+      let errorMessage = 'Login failed'
+      
+      if (e.response?.data?.message) {
+        errorMessage = e.response.data.message
+      } else if (e.message) {
+        errorMessage = e.message
       }
-    },
-
-    async fetchUser() {
-      try {
-        const response = await api.get('/api/user')
-        this.user = response.data
-        return response
-      } catch (error) {
-        if (error.response?.status === 401) {
-          this.clearAuth()
-        }
-        throw error
-      }
-    },
-
-    setAuth(data) {
-      if (data.token) {
-        localStorage.setItem('token', data.token)
-        this.token = data.token
-        api.defaults.headers.common['Authorization'] = `Bearer ${data.token}`
-      }
-      if (data.user) {
-        this.user = data.user
-      }
-    },
-
-    clearAuth() {
-      localStorage.removeItem('token')
-      this.token = null
-      this.user = null
-      delete api.defaults.headers.common['Authorization']
-    },
-
-    async initAuth() {
-      const token = localStorage.getItem('token')
-      if (token) {
-        this.token = token
-        api.defaults.headers.common['Authorization'] = `Bearer ${token}`
-        try {
-          await this.fetchUser()
-        } catch (error) {
-          this.clearAuth()
-        }
-      }
+      
+      error.value = errorMessage
+      throw new Error(errorMessage)
+    } finally {
+      loading.value = false
     }
+  }
+
+  async function logout() {
+    loading.value = true
+    error.value = null
+
+    try {
+      if (token.value) {
+        await api.post('/api/logout')
+      }
+    } catch (e) {
+      console.error('Logout error:', e)
+    } finally {
+      // Clear state regardless of API call success
+      token.value = null
+      user.value = null
+      localStorage.removeItem('token')
+      delete api.defaults.headers.common['Authorization']
+      loading.value = false
+    }
+  }
+
+  async function checkAuth() {
+    if (!token.value) {
+      return false
+    }
+
+    try {
+      const response = await api.get('/api/user')
+      user.value = response.data
+      return true
+    } catch (e) {
+      if (e.response?.status === 401) {
+        // Token is invalid
+        await logout()
+      }
+      return false
+    }
+  }
+
+  async function register(userData) {
+    try {
+      // Get CSRF cookie first
+      await api.get('/sanctum/csrf-cookie')
+      const response = await api.post('/api/register', userData)
+      token.value = response.data.token
+      user.value = response.data.user
+      localStorage.setItem('token', response.data.token)
+      api.defaults.headers.common['Authorization'] = `Bearer ${response.data.token}`
+      return response
+    } catch (error) {
+      console.error('Register error:', error)
+      throw error
+    }
+  }
+
+  async function fetchUser() {
+    try {
+      const response = await api.get('/api/user')
+      user.value = response.data
+      return response
+    } catch (error) {
+      if (error.response?.status === 401) {
+        await logout()
+      }
+      throw error
+    }
+  }
+
+  // Initialize
+  if (token.value) {
+    checkAuth()
+  }
+
+  return {
+    // State
+    token,
+    user,
+    loading,
+    error,
+
+    // Getters
+    isAuthenticated,
+    isLoading,
+    getError,
+    getUser,
+
+    // Actions
+    login,
+    logout,
+    checkAuth,
+    register,
+    fetchUser
   }
 })
 

@@ -5,8 +5,10 @@ import router from './router'
 import axios from 'axios'
 import './style.css'
 
+const API_URL = process.env.VITE_API_BASE_URL || 'https://myanmar-betting-api.onrender.com'
+
 // Configure axios
-axios.defaults.baseURL = import.meta.env.VITE_API_BASE_URL || 'https://myanmar-betting-api.onrender.com'
+axios.defaults.baseURL = API_URL
 axios.defaults.withCredentials = true
 axios.defaults.headers.common['Accept'] = 'application/json'
 axios.defaults.headers.common['Content-Type'] = 'application/json'
@@ -14,7 +16,6 @@ axios.defaults.headers.common['Content-Type'] = 'application/json'
 // Add request interceptor
 axios.interceptors.request.use(
   config => {
-    console.log('API Request:', config.method.toUpperCase(), config.url)
     const token = localStorage.getItem('token')
     if (token) {
       config.headers.Authorization = `Bearer ${token}`
@@ -22,23 +23,38 @@ axios.interceptors.request.use(
     return config
   },
   error => {
-    console.error('API Request Error:', error)
+    console.error('Request failed:', error.message)
     return Promise.reject(error)
   }
 )
 
 // Add response interceptor
 axios.interceptors.response.use(
-  response => {
-    console.log('API Response:', response.status, response.config.url)
-    return response
-  },
+  response => response,
   error => {
-    console.error('API Response Error:', {
-      url: error.config?.url,
-      status: error.response?.status,
-      message: error.response?.data?.message || error.message
-    })
+    if (error.response) {
+      // Server responded with error
+      switch (error.response.status) {
+        case 401:
+          // Unauthorized - clear token and redirect to login
+          localStorage.removeItem('token')
+          router.push('/login')
+          break
+        case 403:
+          // Forbidden
+          router.push('/forbidden')
+          break
+        case 500:
+          console.error('Server error:', error.response.data)
+          break
+      }
+    } else if (error.request) {
+      // Request made but no response
+      console.error('No response from server')
+    } else {
+      // Request setup error
+      console.error('Request setup failed:', error.message)
+    }
     return Promise.reject(error)
   }
 )
@@ -46,9 +62,15 @@ axios.interceptors.response.use(
 // Create app
 const app = createApp(App)
 
+// Global error handler
+app.config.errorHandler = (error, vm, info) => {
+  console.error('Vue Error:', error)
+  console.error('Component:', vm)
+  console.error('Info:', info)
+}
+
 // Use plugins
 app.use(createPinia())
 app.use(router)
 
-// Mount app
 app.mount('#app')
