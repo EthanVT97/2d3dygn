@@ -1,5 +1,5 @@
 import api from './api.js';
-import { loginTemplate, mainTemplate } from './templates.js';
+import { landingTemplate, loginTemplate, mainTemplate, loadingTemplate } from './templates.js';
 import { formatMoney, formatDate, getTransactionStatus, updateTodayNumbers } from './utils.js';
 
 // Router
@@ -7,13 +7,14 @@ function router() {
     const app = document.getElementById('app');
     const token = localStorage.getItem('auth_token');
 
-    if (!token) {
-        app.innerHTML = loginTemplate;
-        setupLoginHandlers();
-    } else {
+    if (token) {
         app.innerHTML = mainTemplate;
         setupMainHandlers();
         loadUserData();
+        loadProfileData();
+    } else {
+        app.innerHTML = loginTemplate;
+        setupLoginHandlers();
     }
 }
 
@@ -23,16 +24,65 @@ function setupLoginHandlers() {
     if (form) {
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const phone = document.getElementById('phone').value;
-            const password = document.getElementById('password').value;
+            const app = document.getElementById('app');
+            
+            // Get form values before showing loading screen
+            const phoneInput = document.getElementById('phone');
+            const passwordInput = document.getElementById('password');
+            
+            if (!phoneInput || !passwordInput) {
+                showError('Form elements not found');
+                return;
+            }
+            
+            const phone = phoneInput.value;
+            const password = passwordInput.value;
+            
+            if (!phone || !password) {
+                showError('ဖုန်းနံပါတ်နှင့် စကားဝှက်ကို ဖြည့်သွင်းပေးပါ။');
+                return;
+            }
+            
+            // Show loading screen
+            app.innerHTML = loadingTemplate;
 
             try {
                 const data = await api.login(phone, password);
-                localStorage.setItem('auth_token', data.token);
-                router();
+                if (data.token) {
+                    localStorage.setItem('auth_token', data.token);
+                    router();
+                } else {
+                    app.innerHTML = loginTemplate;
+                    showError('ဖုန်းနံပါတ် သို့မဟုတ် စကားဝှက် မှားယွင်းနေပါသည်။');
+                    setupLoginHandlers();
+                }
             } catch (error) {
-                alert(error.message || 'Login failed');
+                console.error('Login error:', error);
+                app.innerHTML = loginTemplate;
+                showError('ဆာဗာနှင့် ဆက်သွယ်၍မရပါ။ နောက်မှ ထပ်ကြိုးစားကြည့်ပါ။');
+                setupLoginHandlers();
             }
+        });
+    }
+}
+
+function setupLandingHandlers() {
+    const loginBtn = document.getElementById('loginBtn');
+    const startBtn = document.getElementById('startBtn');
+
+    if (loginBtn) {
+        loginBtn.addEventListener('click', () => {
+            const app = document.getElementById('app');
+            app.innerHTML = loginTemplate;
+            setupLoginHandlers();
+        });
+    }
+
+    if (startBtn) {
+        startBtn.addEventListener('click', () => {
+            const app = document.getElementById('app');
+            app.innerHTML = loginTemplate;
+            setupLoginHandlers();
         });
     }
 }
@@ -41,6 +91,10 @@ function setupMainHandlers() {
     setupLogoutHandler();
     setupBettingHandlers();
     setupTabHandlers();
+    setupProfileHandlers();
+    setupPaymentHandlers();
+    setupThaiLotteryHandlers();
+    setupLaosLotteryHandlers();
 }
 
 function setupTabHandlers() {
@@ -80,12 +134,21 @@ function setupBettingForm(type) {
             const amount = document.getElementById(`amount${type}`).value;
 
             try {
+                if (!numbers || !amount) {
+                    showError('နံပါတ်များနှင့် ငွေပမာဏကို ဖြည့်သွင်းပေးပါ။');
+                    return;
+                }
+
                 const data = await api.placeBet(numbers, amount);
-                alert('ထီထိုးခြင်း အောင်မြင်ပါသည်။');
-                loadUserData();
-                form.reset();
+                if (data.success) {
+                    alert('ထီထိုးခြင်း အောင်မြင်ပါသည်။');
+                    loadUserData();
+                    form.reset();
+                } else {
+                    showError('ထီထိုးခြင်း မအောင်မြင်ပါ။');
+                }
             } catch (error) {
-                alert(error.message || 'ထီထိုးခြင်း မအောင်မြင်ပါ။');
+                showError('ဆာဗာနှင့် ဆက်သွယ်၍မရပါ။ နောက်မှ ထပ်ကြိုးစားကြည့်ပါ။');
             }
         });
     }
@@ -104,6 +167,185 @@ function setupLogoutHandler() {
                 router();
             }
         });
+    }
+}
+
+// Profile Handlers
+function setupProfileHandlers() {
+    const changePasswordBtn = document.getElementById('changePasswordBtn');
+    
+    if (changePasswordBtn) {
+        changePasswordBtn.addEventListener('click', async () => {
+            const oldPassword = prompt('လက်ရှိစကားဝှက်ကို ထည့်ပါ:');
+            const newPassword = prompt('စကားဝှက်အသစ်ကို ထည့်ပါ:');
+            
+            try {
+                if (!oldPassword || !newPassword) {
+                    showError('လက်ရှိစကားဝှက်နှင့် စကားဝှက်အသစ်ကို ဖြည့်သွင်းပေးပါ။');
+                    return;
+                }
+
+                await api.updatePassword(oldPassword, newPassword);
+                alert('စကားဝှက် ပြောင်းလဲခြင်း အောင်မြင်ပါသည်။');
+            } catch (error) {
+                showError('စကားဝှက် ပြောင်းလဲခြင်း မအောင်မြင်ပါ။');
+            }
+        });
+    }
+}
+
+// Payment Handlers
+function setupPaymentHandlers() {
+    const methodCards = document.querySelectorAll('.method-card');
+    const depositForm = document.getElementById('depositForm');
+    const withdrawForm = document.getElementById('withdrawForm');
+
+    methodCards.forEach(card => {
+        card.addEventListener('click', () => {
+            const method = card.dataset.method;
+            if (depositForm) {
+                depositForm.style.display = 'block';
+                depositForm.dataset.method = method;
+            }
+            if (withdrawForm) {
+                withdrawForm.style.display = 'block';
+                withdrawForm.dataset.method = method;
+            }
+        });
+    });
+
+    if (depositForm) {
+        depositForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const amount = document.getElementById('depositAmount').value;
+            const transactionId = document.getElementById('transactionId').value;
+            const method = depositForm.dataset.method;
+
+            try {
+                if (!amount || !transactionId) {
+                    showError('ငွေပမာဏနှင့် ငွေသွင်းခြင်း ID ကို ဖြည့်သွင်းပေးပါ။');
+                    return;
+                }
+
+                await api.deposit(amount, transactionId, method);
+                alert('ငွေသွင်းခြင်း အောင်မြင်ပါသည်။');
+                loadUserData();
+            } catch (error) {
+                showError('ငွေသွင်းခြင်း မအောင်မြင်ပါ။');
+            }
+        });
+    }
+
+    if (withdrawForm) {
+        withdrawForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const amount = document.getElementById('withdrawAmount').value;
+            const phoneNumber = document.getElementById('phoneNumber').value;
+            const method = withdrawForm.dataset.method;
+
+            try {
+                if (!amount || !phoneNumber) {
+                    showError('ငွေပမာဏနှင့် ဖုန်းနံပါတ်ကို ဖြည့်သွင်းပေးပါ။');
+                    return;
+                }
+
+                await api.withdraw(amount, phoneNumber, method);
+                alert('ငွေထုတ်ခြင်း အောင်မြင်ပါသည်။');
+                loadUserData();
+            } catch (error) {
+                showError('ငွေထုတ်ခြင်း မအောင်မြင်ပါ။');
+            }
+        });
+    }
+}
+
+// Thai Lottery Handlers
+function setupThaiLotteryHandlers() {
+    const thaiBettingForm = document.getElementById('thaiBettingForm');
+    
+    if (thaiBettingForm) {
+        thaiBettingForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const number = document.getElementById('thaiNumber').value;
+            const amount = document.getElementById('thaiAmount').value;
+
+            try {
+                if (!number || !amount) {
+                    showError('နံပါတ်နှင့် ငွေပမာဏကို ဖြည့်သွင်းပေးပါ။');
+                    return;
+                }
+
+                await api.placeThaiBet(number, amount);
+                alert('ထိုင်းထီထိုးခြင်း အောင်မြင်ပါသည်။');
+                loadUserData();
+            } catch (error) {
+                showError('ထိုင်းထီထိုးခြင်း မအောင်မြင်ပါ။');
+            }
+        });
+    }
+
+    // Load Thai lottery info
+    loadThaiLotteryInfo();
+}
+
+// Laos Lottery Handlers
+function setupLaosLotteryHandlers() {
+    const laosBettingForm = document.getElementById('laosBettingForm');
+    
+    if (laosBettingForm) {
+        laosBettingForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const number = document.getElementById('laosNumber').value;
+            const amount = document.getElementById('laosAmount').value;
+
+            try {
+                if (!number || !amount) {
+                    showError('နံပါတ်နှင့် ငွေပမာဏကို ဖြည့်သွင်းပေးပါ။');
+                    return;
+                }
+
+                await api.placeLaosBet(number, amount);
+                alert('လာအိုထီထိုးခြင်း အောင်မြင်ပါသည်။');
+                loadUserData();
+            } catch (error) {
+                showError('လာအိုထီထိုးခြင်း မအောင်မြင်ပါ။');
+            }
+        });
+    }
+
+    // Load Laos lottery info
+    loadLaosLotteryInfo();
+}
+
+// Data Loading Functions
+async function loadThaiLotteryInfo() {
+    try {
+        const info = await api.getThaiLotteryInfo();
+        document.getElementById('thaiNextDraw').textContent = info.nextDraw;
+        document.getElementById('thaiLastResult').textContent = info.lastResult;
+    } catch (error) {
+        console.error('Error loading Thai lottery info:', error);
+    }
+}
+
+async function loadLaosLotteryInfo() {
+    try {
+        const info = await api.getLaosLotteryInfo();
+        document.getElementById('laosNextDraw').textContent = info.nextDraw;
+        document.getElementById('laosLastResult').textContent = info.lastResult;
+    } catch (error) {
+        console.error('Error loading Laos lottery info:', error);
+    }
+}
+
+async function loadProfileData() {
+    try {
+        const profile = await api.getProfile();
+        document.getElementById('userPhone').textContent = profile.phone;
+        document.getElementById('userBalance').textContent = formatMoney(profile.balance);
+        document.getElementById('lastLogin').textContent = formatDate(profile.lastLogin);
+    } catch (error) {
+        console.error('Error loading profile:', error);
     }
 }
 
@@ -147,9 +389,96 @@ function updateHistory(transactions) {
     }
 }
 
+function showLoading() {
+    document.getElementById('app').innerHTML = loadingTemplate;
+}
+
+function hideLoading() {
+    // This will be called by the specific page render functions
+}
+
+function showError(message, containerId = 'error-container') {
+    const container = document.getElementById(containerId);
+    if (container) {
+        container.innerHTML = getErrorTemplate(message);
+        
+        // Auto hide after 5 seconds
+        setTimeout(() => {
+            container.innerHTML = '';
+        }, 5000);
+    }
+}
+
+// Dark mode
+function initTheme() {
+    const theme = localStorage.getItem('theme') || 'light';
+    document.documentElement.setAttribute('data-theme', theme);
+    updateThemeIcon(theme);
+}
+
+function toggleTheme() {
+    const currentTheme = document.documentElement.getAttribute('data-theme');
+    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+    
+    document.documentElement.setAttribute('data-theme', newTheme);
+    localStorage.setItem('theme', newTheme);
+    updateThemeIcon(newTheme);
+}
+
+function updateThemeIcon(theme) {
+    const icon = document.querySelector('#theme-toggle i');
+    if (icon) {
+        icon.className = theme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+    }
+}
+
+// Initialize theme and router
+initTheme();
+router();
+
+// Add event listener for theme toggle
+document.addEventListener('DOMContentLoaded', () => {
+    const themeToggle = document.getElementById('theme-toggle');
+    if (themeToggle) {
+        themeToggle.addEventListener('click', toggleTheme);
+    }
+});
+
+// Add event listeners for tab switching
+document.addEventListener('click', (e) => {
+    const tab = e.target.closest('.tab');
+    if (tab) {
+        const tabId = tab.dataset.tab;
+        if (tabId) {
+            switchTab(tabId);
+        }
+    }
+});
+
+// Tab switching animation handler
+function switchTab(tabId) {
+    // Hide all tab contents
+    const tabContents = document.querySelectorAll('.tab-content');
+    tabContents.forEach(content => {
+        content.classList.remove('active');
+    });
+    
+    // Remove active class from all tabs
+    const tabs = document.querySelectorAll('.tab');
+    tabs.forEach(tab => {
+        tab.classList.remove('active');
+    });
+    
+    // Show selected tab content with animation
+    const selectedContent = document.getElementById(tabId);
+    const selectedTab = document.querySelector(`[data-tab="${tabId}"]`);
+    
+    if (selectedContent && selectedTab) {
+        // Add active class to trigger animation
+        selectedContent.classList.add('active');
+        selectedTab.classList.add('active');
+    }
+}
+
 // Auto-update lucky numbers
 setInterval(updateTodayNumbers, 60000); // Update every minute
-
-// Initialize
-window.addEventListener('popstate', router);
-window.addEventListener('DOMContentLoaded', router);
