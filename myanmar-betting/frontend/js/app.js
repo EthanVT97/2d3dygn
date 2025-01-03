@@ -1,210 +1,257 @@
-// API Configuration
+// Constants
 const API_URL = 'https://myanmar-betting-api.onrender.com/api';
+const TOKEN_KEY = 'auth_token';
 
-// Authentication Functions
-const auth = {
-    token: localStorage.getItem('token'),
-    
-    isAuthenticated() {
-        return !!this.token;
-    },
+// HTML Templates
+const loginTemplate = `
+    <div class="login-container">
+        <h1>Myanmar Betting</h1>
+        <form id="loginForm" class="login-form">
+            <div class="form-group">
+                <label for="phone">Phone Number</label>
+                <input type="tel" id="phone" name="phone" required>
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Login</button>
+        </form>
+    </div>
+`;
 
-    async login(phone, password) {
-        try {
-            const response = await fetch(`${API_URL}/login`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json'
-                },
-                body: JSON.stringify({ phone, password })
-            });
-            
-            const data = await response.json();
-            if (data.token) {
-                this.token = data.token;
-                localStorage.setItem('token', data.token);
-                return true;
-            }
-            if (data.message) {
-                throw new Error(data.message);
-            }
-            return false;
-        } catch (error) {
-            console.error('Login error:', error);
-            throw error;
-        }
-    },
+const mainTemplate = `
+    <header class="header">
+        <nav class="nav container">
+            <h1>Myanmar Betting</h1>
+            <div>
+                <span>Balance: $<span id="balance">0.00</span></span>
+                <button id="logoutBtn" class="btn btn-secondary">Logout</button>
+            </div>
+        </nav>
+    </header>
 
-    async logout() {
-        try {
-            await fetch(`${API_URL}/logout`, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${this.token}`,
-                    'Accept': 'application/json'
-                }
-            });
-        } catch (error) {
-            console.error('Logout error:', error);
-        } finally {
-            this.token = null;
-            localStorage.removeItem('token');
-            window.location.href = '/login.html';
-        }
-    }
-};
+    <main class="container">
+        <section class="betting-section">
+            <h2>Place Your Bet</h2>
+            <form id="bettingForm">
+                <div class="form-group">
+                    <label for="numbers">Numbers (comma separated)</label>
+                    <input type="text" id="numbers" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="amount">Amount</label>
+                    <input type="number" id="amount" class="form-control" min="1" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Place Bet</button>
+            </form>
+        </section>
 
-// Betting Functions
-const betting = {
-    async placeBet(numbers, amount) {
-        try {
-            const response = await fetch(`${API_URL}/lottery/bet`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${auth.token}`,
-                    'Accept': 'application/json'
-                },
-                body: JSON.stringify({ 
-                    numbers: numbers.split(',').map(n => n.trim()),
-                    amount: parseFloat(amount)
-                })
-            });
-            return await response.json();
-        } catch (error) {
-            console.error('Betting error:', error);
-            return { error: 'Failed to place bet' };
-        }
-    },
+        <section class="betting-section">
+            <h2>Betting History</h2>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Numbers</th>
+                        <th>Amount</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody id="historyTable">
+                </tbody>
+            </table>
+        </section>
+    </main>
+`;
 
-    async getBettingHistory() {
-        try {
-            const response = await fetch(`${API_URL}/transactions?type=bet`, {
-                headers: {
-                    'Authorization': `Bearer ${auth.token}`,
-                    'Accept': 'application/json'
-                }
-            });
-            const data = await response.json();
-            return data.data; // Laravel pagination returns data in data field
-        } catch (error) {
-            console.error('History fetch error:', error);
-            return { error: 'Failed to fetch history' };
-        }
-    },
+// Router
+function router() {
+    const app = document.getElementById('app');
+    const token = localStorage.getItem(TOKEN_KEY);
+    const path = window.location.pathname;
+    const params = new URLSearchParams(window.location.search);
+    const redirect = params.get('redirect') || '/';
 
-    async getBalance() {
-        try {
-            const response = await fetch(`${API_URL}/balance`, {
-                headers: {
-                    'Authorization': `Bearer ${auth.token}`,
-                    'Accept': 'application/json'
-                }
-            });
-            const data = await response.json();
-            return data.balance;
-        } catch (error) {
-            console.error('Balance fetch error:', error);
-            return 0;
-        }
-    }
-};
-
-// UI Helper Functions
-const ui = {
-    showMessage(message, type = 'info') {
-        const alertDiv = document.createElement('div');
-        alertDiv.className = `alert alert-${type}`;
-        alertDiv.textContent = message;
-        
-        const container = document.querySelector('.container');
-        container.insertBefore(alertDiv, container.firstChild);
-        
-        setTimeout(() => alertDiv.remove(), 3000);
-    },
-
-    async updateBalance() {
-        const balance = await betting.getBalance();
-        const balanceElement = document.getElementById('balance');
-        if (balanceElement) {
-            balanceElement.textContent = balance.toLocaleString();
-        }
-    },
-
-    async updateHistory() {
-        const history = await betting.getBettingHistory();
-        const historyTable = document.getElementById('historyTable');
-        if (historyTable && Array.isArray(history)) {
-            historyTable.innerHTML = history.map(bet => `
-                <tr>
-                    <td>${new Date(bet.created_at).toLocaleString()}</td>
-                    <td>${bet.numbers.join(', ')}</td>
-                    <td>${bet.amount.toLocaleString()}</td>
-                    <td>${bet.status}</td>
-                </tr>
-            `).join('');
-        }
-    }
-};
-
-// Event Listeners
-document.addEventListener('DOMContentLoaded', async () => {
-    // Check Authentication
-    if (!auth.isAuthenticated() && !window.location.pathname.includes('login.html')) {
-        window.location.href = '/login.html';
+    if (!token && path !== '/login') {
+        window.location.href = `/login?redirect=${encodeURIComponent(path)}`;
         return;
     }
 
-    // Update UI if authenticated
-    if (auth.isAuthenticated() && !window.location.pathname.includes('login.html')) {
-        await ui.updateBalance();
-        await ui.updateHistory();
+    if (token && path === '/login') {
+        window.location.href = redirect;
+        return;
     }
 
-    // Login Form
-    const loginForm = document.getElementById('loginForm');
-    if (loginForm) {
-        loginForm.addEventListener('submit', async (e) => {
+    switch (path) {
+        case '/login':
+            app.innerHTML = loginTemplate;
+            setupLoginHandlers();
+            break;
+        case '/':
+            if (!token) {
+                window.location.href = '/login?redirect=/';
+                return;
+            }
+            app.innerHTML = mainTemplate;
+            setupMainHandlers();
+            loadUserData();
+            break;
+        default:
+            window.location.href = '/';
+    }
+}
+
+// Event Handlers
+function setupLoginHandlers() {
+    const form = document.getElementById('loginForm');
+    if (form) {
+        form.addEventListener('submit', async (e) => {
             e.preventDefault();
             const phone = document.getElementById('phone').value;
             const password = document.getElementById('password').value;
-            
+
             try {
-                const success = await auth.login(phone, password);
-                if (success) {
-                    window.location.href = '/index.html';
-                } else {
-                    ui.showMessage('Login failed. Please check your credentials.', 'error');
+                const response = await fetch(`${API_URL}/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ phone, password }),
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.message || 'Login failed');
                 }
+
+                localStorage.setItem(TOKEN_KEY, data.token);
+                const params = new URLSearchParams(window.location.search);
+                window.location.href = params.get('redirect') || '/';
             } catch (error) {
-                ui.showMessage(error.message, 'error');
+                alert(error.message);
             }
         });
     }
+}
 
-    // Betting Form
-    const bettingForm = document.getElementById('bettingForm');
-    if (bettingForm) {
-        bettingForm.addEventListener('submit', async (e) => {
+function setupMainHandlers() {
+    setupLogoutHandler();
+    setupBettingHandler();
+}
+
+function setupLogoutHandler() {
+    const logoutBtn = document.getElementById('logoutBtn');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', async () => {
+            try {
+                await fetch(`${API_URL}/logout`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem(TOKEN_KEY)}`,
+                    },
+                });
+            } catch (error) {
+                console.error('Logout error:', error);
+            } finally {
+                localStorage.removeItem(TOKEN_KEY);
+                window.location.href = '/login';
+            }
+        });
+    }
+}
+
+function setupBettingHandler() {
+    const form = document.getElementById('bettingForm');
+    if (form) {
+        form.addEventListener('submit', async (e) => {
             e.preventDefault();
             const numbers = document.getElementById('numbers').value;
             const amount = document.getElementById('amount').value;
-            
-            const result = await betting.placeBet(numbers, amount);
-            if (result.error) {
-                ui.showMessage(result.error, 'error');
-            } else {
-                ui.showMessage('Bet placed successfully!', 'success');
-                await ui.updateBalance();
-                await ui.updateHistory();
+
+            try {
+                const response = await fetch(`${API_URL}/lottery/bet`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem(TOKEN_KEY)}`,
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        numbers: numbers.split(',').map(n => n.trim()),
+                        amount: parseFloat(amount),
+                    }),
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.message || 'Failed to place bet');
+                }
+
+                alert('Bet placed successfully!');
+                loadUserData();
+                form.reset();
+            } catch (error) {
+                alert(error.message);
             }
         });
     }
+}
 
-    // Logout Button
-    const logoutBtn = document.getElementById('logoutBtn');
-    if (logoutBtn) {
-        logoutBtn.addEventListener('click', () => auth.logout());
+async function loadUserData() {
+    try {
+        const [balanceRes, historyRes] = await Promise.all([
+            fetch(`${API_URL}/balance`, {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem(TOKEN_KEY)}`,
+                },
+            }),
+            fetch(`${API_URL}/transactions`, {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem(TOKEN_KEY)}`,
+                },
+            }),
+        ]);
+
+        if (!balanceRes.ok || !historyRes.ok) {
+            throw new Error('Failed to load user data');
+        }
+
+        const balanceData = await balanceRes.json();
+        const historyData = await historyRes.json();
+
+        updateBalance(balanceData.balance);
+        updateHistory(historyData);
+    } catch (error) {
+        console.error('Error loading user data:', error);
+        if (error.message === 'Unauthorized') {
+            window.location.href = '/login';
+        }
     }
-});
+}
+
+function updateBalance(balance) {
+    const balanceElement = document.getElementById('balance');
+    if (balanceElement) {
+        balanceElement.textContent = balance.toFixed(2);
+    }
+}
+
+function updateHistory(transactions) {
+    const tableBody = document.getElementById('historyTable');
+    if (tableBody) {
+        tableBody.innerHTML = transactions.map(t => `
+            <tr>
+                <td>${new Date(t.created_at).toLocaleString()}</td>
+                <td>${t.numbers.join(', ')}</td>
+                <td>$${t.amount.toFixed(2)}</td>
+                <td>${t.status}</td>
+            </tr>
+        `).join('');
+    }
+}
+
+// Initialize
+window.addEventListener('popstate', router);
+window.addEventListener('DOMContentLoaded', router);
