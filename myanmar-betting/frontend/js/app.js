@@ -1,6 +1,6 @@
-import api from '/js/api.js';
-import { landingTemplate, loginTemplate, mainTemplate, loadingTemplate } from '/js/templates.js';
-import { formatMoney, formatDate, getTransactionStatus, updateTodayNumbers } from '/js/utils.js';
+import api from './api.js';
+import { landingTemplate, loginTemplate, mainTemplate, loadingTemplate } from './templates.js';
+import { formatMoney, formatDate, getTransactionStatus, updateTodayNumbers } from './utils.js';
 
 // Router
 function router() {
