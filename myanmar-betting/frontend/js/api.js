@@ -18,7 +18,6 @@ const api = {
                 ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
             },
             mode: 'cors',
-            credentials: 'include',
         };
 
         const fetchOptions = {
