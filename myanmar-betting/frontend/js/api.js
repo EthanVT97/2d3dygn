@@ -17,6 +17,7 @@ const api = {
                 'Accept': 'application/json',
                 ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
             },
+            mode: 'cors',
             credentials: 'include',
         };
 
@@ -33,13 +34,13 @@ const api = {
             if (DEBUG) console.log(`API Request: ${url}`, fetchOptions);
             
             const response = await fetch(url, fetchOptions);
-            const data = await response.json();
-
-            if (DEBUG) console.log(`API Response: ${url}`, data);
-
             if (!response.ok) {
-                throw new Error(data.message || 'API request failed');
+                const error = await response.json();
+                throw new Error(error.message || 'API request failed');
             }
+
+            const data = await response.json();
+            if (DEBUG) console.log(`API Response: ${url}`, data);
 
             return data;
         } catch (error) {

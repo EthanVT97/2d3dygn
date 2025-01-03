@@ -15,11 +15,11 @@ return [
     |
     */
 
-    'paths' => ['api/*', 'sanctum/csrf-cookie'],
+    'paths' => ['*'],
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => explode(',', env('CORS_ALLOWED_ORIGINS', '')),
+    'allowed_origins' => ['https://myanmar-betting.onrender.com', 'http://localhost:62860'],
 
     'allowed_origins_patterns' => [],
 
