@@ -40,6 +40,8 @@ Route::get('/health-check', function() {
     }
 });
 
+Route::get('/test-db', [App\Http\Controllers\TestController::class, 'testConnection']);
+
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 
