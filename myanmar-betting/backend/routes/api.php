@@ -42,6 +42,10 @@ Route::get('/health-check', function() {
 
 Route::get('/test-db', [App\Http\Controllers\TestController::class, 'testConnection']);
 
+// Public game routes
+Route::get('/lottery/results', [LotteryController::class, 'getTwoDResults']);
+Route::get('/football/tables', [FootballController::class, 'getTables']);
+
 // Auth routes
 Route::group(['prefix' => 'auth'], function () {
     Route::post('/register', [AuthController::class, 'register']);

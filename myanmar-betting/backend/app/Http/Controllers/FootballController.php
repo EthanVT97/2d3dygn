@@ -41,6 +41,33 @@ class FootballController extends Controller
     }
 
     /**
+     * Get league tables
+     */
+    public function getTables(Request $request)
+    {
+        try {
+            $tables = DB::table('football_tables')
+                ->when($request->league_id, function ($query, $leagueId) {
+                    $query->where('league_id', $leagueId);
+                })
+                ->orderBy('points', 'desc')
+                ->orderBy('goal_difference', 'desc')
+                ->get();
+
+            return response()->json([
+                'status' => 'success',
+                'data' => $tables
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to fetch tables',
+                'error' => config('app.debug') ? $e->getMessage() : null
+            ], 500);
+        }
+    }
+
+    /**
      * Place a bet on a match
      */
     public function placeBet(Request $request)
