@@ -12,8 +12,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // First, drop the existing enum constraint
-        DB::statement("ALTER TABLE transactions MODIFY COLUMN type ENUM('deposit', 'withdrawal', 'bet', 'winning', 'refund', 'admin_deposit')");
+        // First, alter the column type to use a new enum
+        DB::statement("ALTER TABLE transactions ALTER COLUMN type TYPE varchar USING type::varchar");
+        DB::statement("DROP TYPE IF EXISTS transaction_type");
+        DB::statement("CREATE TYPE transaction_type AS ENUM('deposit', 'withdrawal', 'bet', 'winning', 'refund', 'admin_deposit')");
+        DB::statement("ALTER TABLE transactions ALTER COLUMN type TYPE transaction_type USING type::transaction_type");
     }
 
     /**
@@ -21,7 +24,10 @@ return new class extends Migration
      */
     public function down(): void
     {
-        // Revert back to original enum values
-        DB::statement("ALTER TABLE transactions MODIFY COLUMN type ENUM('deposit', 'withdrawal', 'bet', 'winning', 'refund')");
+        // Convert back to the original enum type
+        DB::statement("ALTER TABLE transactions ALTER COLUMN type TYPE varchar USING type::varchar");
+        DB::statement("DROP TYPE IF EXISTS transaction_type");
+        DB::statement("CREATE TYPE transaction_type AS ENUM('deposit', 'withdrawal', 'bet', 'winning', 'refund')");
+        DB::statement("ALTER TABLE transactions ALTER COLUMN type TYPE transaction_type USING type::transaction_type");
     }
 };
