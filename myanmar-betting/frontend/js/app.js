@@ -85,18 +85,18 @@ const api = {
 
 // HTML Templates
 const loginTemplate = `
-    <div class="login-container">
-        <h1>Myanmar Betting</h1>
+    <div class="login-container fadeIn">
+        <h1>မြန်မာ့ထီ</h1>
         <form id="loginForm" class="login-form">
             <div class="form-group">
-                <label for="phone">Phone Number</label>
-                <input type="tel" id="phone" name="phone" required>
+                <label for="phone">ဖုန်းနံပါတ်</label>
+                <input type="tel" id="phone" name="phone" required placeholder="09xxxxxxxxx">
             </div>
             <div class="form-group">
-                <label for="password">Password</label>
-                <input type="password" id="password" name="password" required>
+                <label for="password">စကားဝှက်</label>
+                <input type="password" id="password" name="password" required placeholder="စကားဝှက်ရိုက်ထည့်ပါ">
             </div>
-            <button type="submit" class="btn btn-primary">Login</button>
+            <button type="submit" class="btn btn-primary">ဝင်ရောက်မည်</button>
         </form>
     </div>
 `;
@@ -104,39 +104,59 @@ const loginTemplate = `
 const mainTemplate = `
     <header class="header">
         <nav class="nav container">
-            <h1>Myanmar Betting</h1>
-            <div>
-                <span>Balance: $<span id="balance">0.00</span></span>
-                <button id="logoutBtn" class="btn btn-secondary">Logout</button>
+            <h1>မြန်မာ့ထီ</h1>
+            <div class="nav-balance">
+                <span>လက်ကျန်ငွေ: <span id="balance">0</span> ကျပ်</span>
+                <button id="logoutBtn" class="btn btn-secondary">ထွက်မည်</button>
             </div>
         </nav>
     </header>
 
-    <main class="container">
-        <section class="betting-section">
-            <h2>Place Your Bet</h2>
-            <form id="bettingForm">
+    <main class="container fadeIn">
+        <div class="lottery-tabs">
+            <button class="tab-button active" data-tab="2d">2D ထီ</button>
+            <button class="tab-button" data-tab="3d">3D ထီ</button>
+        </div>
+
+        <section id="2d-section" class="betting-section fadeIn">
+            <h2>2D ထီထိုးမည်</h2>
+            <form id="betting2dForm" class="betting-form">
                 <div class="form-group">
-                    <label for="numbers">Numbers (comma separated)</label>
-                    <input type="text" id="numbers" class="form-control" required>
+                    <label for="numbers2d">ထီဂဏန်း (ဥပမာ - 23,45)</label>
+                    <input type="text" id="numbers2d" class="form-control" required placeholder="ဂဏန်းနှစ်လုံး ရိုက်ထည့်ပါ">
                 </div>
                 <div class="form-group">
-                    <label for="amount">Amount</label>
-                    <input type="number" id="amount" class="form-control" min="1" required>
+                    <label for="amount2d">ငွေပမာဏ (ကျပ်)</label>
+                    <input type="number" id="amount2d" class="form-control" min="100" step="100" required placeholder="ထိုးမည့်ငွေပမာဏ">
                 </div>
-                <button type="submit" class="btn btn-primary">Place Bet</button>
+                <button type="submit" class="btn btn-primary">ထီထိုးမည်</button>
             </form>
         </section>
 
-        <section class="betting-section">
-            <h2>Betting History</h2>
+        <section id="3d-section" class="betting-section fadeIn" style="display: none;">
+            <h2>3D ထီထိုးမည်</h2>
+            <form id="betting3dForm" class="betting-form">
+                <div class="form-group">
+                    <label for="numbers3d">ထီဂဏန်း (ဥပမာ - 234,567)</label>
+                    <input type="text" id="numbers3d" class="form-control" required placeholder="ဂဏန်းသုံးလုံး ရိုက်ထည့်ပါ">
+                </div>
+                <div class="form-group">
+                    <label for="amount3d">ငွေပမာဏ (ကျပ်)</label>
+                    <input type="number" id="amount3d" class="form-control" min="100" step="100" required placeholder="ထိုးမည့်ငွေပမာဏ">
+                </div>
+                <button type="submit" class="btn btn-primary">ထီထိုးမည်</button>
+            </form>
+        </section>
+
+        <section class="betting-section fadeIn">
+            <h2>ထီထိုးမှတ်တမ်း</h2>
             <table class="table">
                 <thead>
                     <tr>
-                        <th>Date</th>
-                        <th>Numbers</th>
-                        <th>Amount</th>
-                        <th>Status</th>
+                        <th>ရက်စွဲ</th>
+                        <th>ထီဂဏန်း</th>
+                        <th>ငွေပမာဏ</th>
+                        <th>အခြေအနေ</th>
                     </tr>
                 </thead>
                 <tbody id="historyTable">
@@ -145,6 +165,38 @@ const mainTemplate = `
         </section>
     </main>
 `;
+
+// Helper Functions
+function formatMoney(amount) {
+    return new Intl.NumberFormat('my-MM').format(amount);
+}
+
+function formatDate(dateString) {
+    const options = { 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric', 
+        hour: 'numeric', 
+        minute: 'numeric',
+        hour12: true
+    };
+    return new Date(dateString).toLocaleDateString('my-MM', options);
+}
+
+function getTransactionStatus(status) {
+    switch(status.toLowerCase()) {
+        case 'pending':
+            return 'စောင့်ဆိုင်းဆဲ';
+        case 'completed':
+            return 'ပြီးဆုံး';
+        case 'won':
+            return 'ထီပေါက်';
+        case 'lost':
+            return 'မပေါက်';
+        default:
+            return status;
+    }
+}
 
 // Router
 function router() {
@@ -206,7 +258,56 @@ function setupLoginHandlers() {
 
 function setupMainHandlers() {
     setupLogoutHandler();
-    setupBettingHandler();
+    setupBettingHandlers();
+    setupTabHandlers();
+}
+
+function setupTabHandlers() {
+    const tabButtons = document.querySelectorAll('.tab-button');
+    const sections = {
+        '2d': document.getElementById('2d-section'),
+        '3d': document.getElementById('3d-section')
+    };
+
+    tabButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            const tab = button.dataset.tab;
+            
+            // Update active tab button
+            tabButtons.forEach(btn => btn.classList.remove('active'));
+            button.classList.add('active');
+
+            // Show/hide sections
+            Object.entries(sections).forEach(([key, section]) => {
+                section.style.display = key === tab ? 'block' : 'none';
+            });
+        });
+    });
+}
+
+function setupBettingHandlers() {
+    setupBettingForm('2d');
+    setupBettingForm('3d');
+}
+
+function setupBettingForm(type) {
+    const form = document.getElementById(`betting${type}Form`);
+    if (form) {
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const numbers = document.getElementById(`numbers${type}`).value;
+            const amount = document.getElementById(`amount${type}`).value;
+
+            try {
+                const data = await api.placeBet(numbers, amount);
+                alert('ထီထိုးခြင်း အောင်မြင်ပါသည်။');
+                loadUserData();
+                form.reset();
+            } catch (error) {
+                alert(error.message || 'ထီထိုးခြင်း မအောင်မြင်ပါ။');
+            }
+        });
+    }
 }
 
 function setupLogoutHandler() {
@@ -220,26 +321,6 @@ function setupLogoutHandler() {
             } finally {
                 localStorage.removeItem(TOKEN_KEY);
                 window.location.href = '/login';
-            }
-        });
-    }
-}
-
-function setupBettingHandler() {
-    const form = document.getElementById('bettingForm');
-    if (form) {
-        form.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const numbers = document.getElementById('numbers').value;
-            const amount = document.getElementById('amount').value;
-
-            try {
-                const data = await api.placeBet(numbers, amount);
-                alert('Bet placed successfully!');
-                loadUserData();
-                form.reset();
-            } catch (error) {
-                alert(error.message);
             }
         });
     }
@@ -265,7 +346,7 @@ async function loadUserData() {
 function updateBalance(balance) {
     const balanceElement = document.getElementById('balance');
     if (balanceElement) {
-        balanceElement.textContent = balance.toFixed(2);
+        balanceElement.textContent = formatMoney(balance);
     }
 }
 
@@ -274,10 +355,10 @@ function updateHistory(transactions) {
     if (tableBody) {
         tableBody.innerHTML = transactions.map(t => `
             <tr>
-                <td>${new Date(t.created_at).toLocaleString()}</td>
+                <td>${formatDate(t.created_at)}</td>
                 <td>${t.numbers.join(', ')}</td>
-                <td>$${t.amount.toFixed(2)}</td>
-                <td>${t.status}</td>
+                <td>${formatMoney(t.amount)} ကျပ်</td>
+                <td>${getTransactionStatus(t.status)}</td>
             </tr>
         `).join('');
     }
