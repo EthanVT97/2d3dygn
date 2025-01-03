@@ -1,5 +1,7 @@
 // Constants
-const API_URL = 'https://myanmar-betting-api.onrender.com/api';
+const API_URL = window.location.hostname === 'localhost' 
+    ? 'http://localhost:3000/api'  // Development
+    : 'https://myanmar-betting-backend.onrender.com/api';  // Production
 const TOKEN_KEY = 'auth_token';
 const DEBUG = true;
 
@@ -15,7 +17,7 @@ const api = {
                 'Accept': 'application/json',
                 ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
             },
-            credentials: 'include',
+            mode: 'cors',
         };
 
         const fetchOptions = {
@@ -31,13 +33,13 @@ const api = {
             if (DEBUG) console.log(`API Request: ${url}`, fetchOptions);
             
             const response = await fetch(url, fetchOptions);
-            const data = await response.json();
-
-            if (DEBUG) console.log(`API Response: ${url}`, data);
-
             if (!response.ok) {
-                throw new Error(data.message || 'API request failed');
+                const error = await response.json();
+                throw new Error(error.message || 'API request failed');
             }
+
+            const data = await response.json();
+            if (DEBUG) console.log(`API Response: ${url}`, data);
 
             return data;
         } catch (error) {
@@ -48,14 +50,14 @@ const api = {
 
     // Auth endpoints
     async login(phone, password) {
-        return this.request('/login', {
+        return this.request('/auth/login', {
             method: 'POST',
             body: JSON.stringify({ phone, password }),
         });
     },
 
     async logout() {
-        return this.request('/logout', {
+        return this.request('/auth/logout', {
             method: 'POST',
         });
     },
@@ -77,6 +79,57 @@ const api = {
                 numbers: numbers.split(',').map(n => n.trim()),
                 amount: parseFloat(amount),
             }),
+        });
+    },
+
+    // Profile endpoints
+    getProfile() {
+        return this.request('/profile', { method: 'GET' });
+    },
+
+    updatePassword(oldPassword, newPassword) {
+        return this.request('/profile/password', {
+            method: 'POST',
+            body: JSON.stringify({ oldPassword, newPassword })
+        });
+    },
+
+    // Payment endpoints
+    deposit(amount, transactionId, method) {
+        return this.request('/deposit', {
+            method: 'POST',
+            body: JSON.stringify({ amount, transactionId, method })
+        });
+    },
+
+    withdraw(amount, phoneNumber, method) {
+        return this.request('/withdraw', {
+            method: 'POST',
+            body: JSON.stringify({ amount, phoneNumber, method })
+        });
+    },
+
+    // Thai Lottery endpoints
+    getThaiLotteryInfo() {
+        return this.request('/lottery/thai');
+    },
+
+    placeThaiBet(number, amount) {
+        return this.request('/lottery/thai/bet', {
+            method: 'POST',
+            body: JSON.stringify({ number, amount })
+        });
+    },
+
+    // Laos Lottery endpoints
+    getLaosLotteryInfo() {
+        return this.request('/lottery/laos');
+    },
+
+    placeLaosBet(number, amount) {
+        return this.request('/lottery/laos/bet', {
+            method: 'POST',
+            body: JSON.stringify({ number, amount })
         });
     },
 };
