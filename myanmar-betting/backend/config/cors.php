@@ -19,7 +19,7 @@ return [
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => ['https://myanmar-betting.onrender.com', 'http://localhost:62860'],
+    'allowed_origins' => ['*'],
 
     'allowed_origins_patterns' => [],
 
