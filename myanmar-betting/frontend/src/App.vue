@@ -150,6 +150,7 @@
         </div>
       </div>
     </footer>
+    <ApiTest v-if="import.meta.env.DEV" />
   </div>
 </template>
 
@@ -157,6 +158,7 @@
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import ApiTest from './components/ApiTest.vue'
 
 const router = useRouter()
 const auth = useAuthStore()

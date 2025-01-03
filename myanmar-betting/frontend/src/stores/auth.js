@@ -16,6 +16,8 @@ export const useAuthStore = defineStore('auth', {
   state: () => ({
     user: null,
     token: localStorage.getItem('token'),
+    loading: false,
+    error: null
   }),
 
   getters: {
@@ -26,15 +28,48 @@ export const useAuthStore = defineStore('auth', {
 
   actions: {
     async login(credentials) {
+      this.loading = true
+      this.error = null
+      
       try {
-        // Get CSRF cookie first
+        // Check if API is responding
+        try {
+          const response = await axios.get('/api/matches')
+          if (!response.data) {
+            throw new Error('Invalid response from server')
+          }
+        } catch (error) {
+          if (error.response?.status === 500) {
+            throw new Error('The server is currently experiencing issues. Please try again later.')
+          } else if (!error.response) {
+            throw new Error('Unable to connect to the server. Please check your internet connection.')
+          }
+        }
+
+        // Get CSRF cookie
         await api.get('/sanctum/csrf-cookie')
-        const response = await api.post('/api/login', credentials)
-        this.setAuth(response.data)
-        return response
+        
+        // Attempt login
+        const loginResponse = await api.post('/api/login', credentials)
+        
+        if (!loginResponse.data?.token) {
+          throw new Error('Invalid response from server: No token received')
+        }
+
+        // Set token in axios headers
+        api.defaults.headers.common['Authorization'] = `Bearer ${loginResponse.data.token}`
+        
+        // Store token and user data
+        localStorage.setItem('token', loginResponse.data.token)
+        this.token = loginResponse.data.token
+        this.user = loginResponse.data.user
+        
+        return loginResponse
       } catch (error) {
-        console.error('Login error:', error)
+        this.error = error.response?.data?.message || error.message
         throw error
+      } finally {
+        this.loading = false
       }
     },
 
@@ -53,7 +88,9 @@ export const useAuthStore = defineStore('auth', {
 
     async logout() {
       try {
-        await api.post('/api/logout')
+        if (this.token) {
+          await api.post('/api/logout')
+        }
       } catch (error) {
         console.error('Logout error:', error)
       } finally {
@@ -67,16 +104,17 @@ export const useAuthStore = defineStore('auth', {
         this.user = response.data
         return response
       } catch (error) {
-        console.error('Fetch user error:', error)
-        this.clearAuth()
+        if (error.response?.status === 401) {
+          this.clearAuth()
+        }
         throw error
       }
     },
 
     setAuth(data) {
       if (data.token) {
-        this.token = data.token
         localStorage.setItem('token', data.token)
+        this.token = data.token
         api.defaults.headers.common['Authorization'] = `Bearer ${data.token}`
       }
       if (data.user) {
@@ -85,15 +123,16 @@ export const useAuthStore = defineStore('auth', {
     },
 
     clearAuth() {
-      this.user = null
-      this.token = null
       localStorage.removeItem('token')
+      this.token = null
+      this.user = null
       delete api.defaults.headers.common['Authorization']
     },
 
     async initAuth() {
       const token = localStorage.getItem('token')
       if (token) {
+        this.token = token
         api.defaults.headers.common['Authorization'] = `Bearer ${token}`
         try {
           await this.fetchUser()
