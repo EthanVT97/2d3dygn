@@ -1,7 +1,7 @@
 // Constants
 const API_URL = window.location.hostname === 'localhost' 
-    ? 'http://localhost:3000/api/v1'  // Development
-    : 'https://myanmar-betting-api.onrender.com/api/v1';  // Production
+    ? 'http://localhost:3000/api'  // Development
+    : 'https://myanmar-betting-api.onrender.com/api';  // Production
 const TOKEN_KEY = 'auth_token';
 const DEBUG = true;
 
